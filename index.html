@@ -45,9 +45,12 @@
 
                 <p>I'm using <a href="http://nodejs.org/">node.js</a> rather than a dedicated testing suite to perform functional web testing with <a href="https://github.com/jsdevel/webdriver-sync">webdriver-sync</a>and performance testing with <a href="https://github.com/marcelduran/webpagetest-api">webpagetest</a>.</p>
 
+                <h3>Why javascript?</h3>
                 <p>There is nothing here that couldn't be (or hasn't been) done in other languages, but I have a working familiarity with javascript, so that is my language of choice.</p>
                 
+                <h3>Why node.js?</h3>
                 <p>There will also be precious little here that plays to node's conventional strengths, such as http control and asynchronous program flow. Asynchronous is fine when you are responding to events and unknown amounts of traffic, but for testing where you want to control the flow of events and reach predictable results, it is a PITA. With that in mind, I'm using a synchronous version of the webdriver client, plus synchronous versions of base methods, to avoid the pain of dealing with nested callbacks and promises.</p>
+                <p>I had developed a <a href="https://github.com/NickTulett/TestComplete-snippets/blob/master/WebDriver.sj">workable interface</a> from <a href="http://smartbear.com/products/qa-tools/automated-testing-tools/">TestComplete</a> to webdriver using the JSON protocol but TestComplete's version of Jscript (from IE5, would you believe?) and clunky editor left me wanting something more flexible. It took a bit of setting up but using <a href="http://www.sublimetext.com/">Sublime Text</a> to write scripts, executing them cross-browser and cross-OS with modern js in node and debugging them remotely with node-inspector suits me fine.</p>
 
 
             </section>
