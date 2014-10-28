@@ -55,18 +55,20 @@
                 <pre><code>
     var wd = require("webdriver-sync");                
     var caps = new wd.DesiredCapabilities["internetExplorer"]();
-    var driver = new wd["RemoteWebDriver"]("http://[remote machine ip address]:4444/wd/hub", caps);
+    var driver = new wd["RemoteWebDriver"]
+        ("http://[remote machine ip address]:4444/wd/hub", caps);
                 </code></pre>
 
                 <h3>Running tests on IOS</h3>
                 <p>This is a bit more complicated. To run a test on an iPad for instance, you will need some Mac hardware running OSX. Connect the iPad using the USB cable.</p>
                 <p>You will need to enable developer mode on the iPad via Xcode on the Mac. In Xcode open the devices organiser, select the iPad and click "Use for Development"</p>
                 <p>Before running any tests, launch <a href="http://ios-driver.github.io/ios-driver/?page=setup">ios-server-standalone-n.n.n-SNAPSHOT.jar</a> in iTerm on the Mac with the -beta flag. You should now see the iPad connected via port 5555 (remember 4444 is already used for the local webdriver on the Mac).</p>
-                <p>You can now run tests on the IOS from the Mac (or any other machine using the remote driver option)</p>:
+                <p>You can now run tests on the IOS from the Mac (or any other machine using the remote driver option):</p>
                 <pre><code>
     var wd = require("webdriver-sync");                                
     var caps = new wd.DesiredCapabilities["ipad"]();
-    var driver = new wd["RemoteWebDriver"]("http://[Mac ip address]:5555/wd/hub", caps);
+    var driver = new wd["RemoteWebDriver"]
+        ("http://[Mac ip address]:5555/wd/hub", caps);
                 </code></pre>
                 <p>Sometimes you can see that the tests are running because there is output in iTerm but you can't see anything happen on the iPad. Just open another tab and you should be able to see the tests running.</p>
                 <p>Remember there is no local file system access on the iPad so there is no way to run tests involving uploading or downloading files.</p>
