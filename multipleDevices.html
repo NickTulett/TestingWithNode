@@ -47,12 +47,32 @@
                 <h3>Running tests remotely.</h3>
                 <p>Normally you would instantiate a browser locally something like this:</p>
                 <pre><code>
-                var wd = require("webdriver-sync");
-                var caps = new wd.DesiredCapabilities["chrome"]();
-                driver = new wd["ChromeDriver"](caps);
+    var wd = require("webdriver-sync");
+    var caps = new wd.DesiredCapabilities["chrome"]();
+    var driver = new wd["ChromeDriver"](caps);
+                </code></pre>
+                <p>To instantiate a browser on a remote machine (which has the appropriate webdriver installed) just include the machine's IP address and request a RemoteWebDriver:</p>
+                <pre><code>
+    var wd = require("webdriver-sync");                
+    var caps = new wd.DesiredCapabilities["internetExplorer"]();
+    var driver = new wd["RemoteWebDriver"]("http://[remote machine ip address]:4444/wd/hub", caps);
                 </code></pre>
 
-                <a href="enhancedScripts.html">Readable, modular test scripts</a></li>
+                <h3>Running tests on IOS</h3>
+                <p>This is a bit more complicated. To run a test on an iPad for instance, you will need some Mac hardware running OSX. Connect the iPad using the USB cable.</p>
+                <p>You will need to enable developer mode on the iPad via Xcode on the Mac. In Xcode open the devices organiser, select the iPad and click "User for Development"</p>
+                <p>Before running any tests, launch <a href="http://ios-driver.github.io/ios-driver/?page=setup">ios-server-standalone-n.n.n-SNAPSHOT.jar</a> on the Mac with the -beta flag.</p>
+                <p>You can now run tests on the IOS from the Mac (or any other machine using the remote driver option)</p>:
+                <pre><code>
+    var wd = require("webdriver-sync");                                
+    var caps = new wd.DesiredCapabilities["ipad"]();
+    var driver = new wd["RemoteWebDriver"]("http://[Mac ip address]:5555/wd/hub", caps);
+                </code></pre>
+
+                <h3>Running tests on Android</h3>
+                <p>Something to do with adb. Need to look into this again as I haven't used it for months.</p>
+                
+                <a href="enhancedScripts.html">Next: Readable, modular test scripts</a></li>
 
 
             </section>
