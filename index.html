@@ -52,6 +52,9 @@
                 <p>There will also be precious little here that plays to node's conventional strengths, such as http control and asynchronous program flow. Asynchronous is fine when you are responding to events and unknown amounts of traffic, but for testing where you want to control the flow of events and reach predictable results, it is a PITA. With that in mind, I'm using a synchronous version of the webdriver client, plus synchronous versions of base methods, to avoid the pain of dealing with nested callbacks and promises.</p>
                 <p>I had developed a <a href="https://github.com/NickTulett/TestComplete-snippets/blob/master/WebDriver.sj">workable interface</a> from <a href="http://smartbear.com/products/qa-tools/automated-testing-tools/">TestComplete</a> to webdriver using the JSON protocol but TestComplete's version of Jscript (from IE5, would you believe?) and clunky editor left me wanting something more flexible. It took a bit of setting up but using <a href="http://www.sublimetext.com/">Sublime Text</a> to write scripts, executing them cross-browser and cross-OS with modern js in node and debugging them remotely with node-inspector suits me fine.</p>
 
+                <h3>Which framework?</h3>
+                <p>I don't use frameworks.</p>
+                <p>They all seem too wordy when I may need to be generating 50 tests a day. All of our tasks and bugs are documented and tracked in JIRA, so all of my tests refer back to JIRA issues. Why do the same work twice?</p>
 
             </section>
 
