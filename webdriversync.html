@@ -48,7 +48,7 @@
                 <p>There are clients available in various languages to enable you to write scripts for webdriver. <a href="https://github.com/jsdevel/webdriver-sync">Webdriver-sync</a> is a client for node.js that allows scripts to be written in a procedural, synchronous style.</p>
                 
                 <h3>Installing webdriver-sync</h3>
-                <p>Webdriver-sync can be installed on Linux, OSX and Windows (note that installation on windows is initially painful due the dependency on node-java which itself entails installing part of VisualStudio). Instructions are on the linked github page.</p>
+                <p>Webdriver-sync can be installed on Linux, OSX and Windows (note that installation on Windows is initially painful due the dependency on node-java which itself entails installing part of VisualStudio). Instructions are on the linked github page and <a href="http://siva-palakurthi.blogspot.co.uk/2012/12/use-java-in-nodejs.html">here</a> - just be careful about selecting the correct version of each component.</p>
 
                 <h3>Using webdriver-sync from node.js</h3>
                 <p>Webdriver-sync is simply required by your test script, then you run it as a normal node.js CLI application. See the github page for examples.</p>
@@ -56,6 +56,11 @@
                 <h3>Keeping webdriver-sync up to date</h3>
                 <p>Browser versions change frequently and the corresponding webdriver clients have to keep pace with these changes.</p>
                 <p>One of the nice things about webdriver-sync is that after the initial install it handles all these dependencies for you. Keep webdriver-sync up to date via npm and it downloads and installs any necessary driver updates for you.</p>
+
+                <h3>Webdriver-sync capabilities</h3>
+                <p>Your webdriver scripts will instantiate a browser then navigate to and interact with websites using selectors and events (just as you would in client-side javascript). You can also execute javascript in the browser at run-time (to parse variables in running code, check response headers, etc).</p>
+                <p>Webdriver is essentially a node.js wrapper around the java client, which is <a href="http://selenium.googlecode.com/git/docs/api/java/index.html?org/openqa/selenium/WebDriver.html">documented here</a>.</p>
+                <p>Don't worry too much about trying to dig through all that detail. We will be developing a <a href="enhancedScripts.html">DSL</a> to abstract away from the low-level stuff.</p>
 
                 <a href="multipleDevices.html">Next: Using multiple OSes and devices</a></li>
 
