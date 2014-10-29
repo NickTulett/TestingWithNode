@@ -252,7 +252,6 @@ function WD_findElement(selector, index) {
 
             //these use standard webdriver WebElement methods
             element.set = function setValue(newValue) {
-                console.log("SETTING VALUE " + (selector.match(/password/) ? "********" : ("" + newValue)));
                 return element.sendKeys(newValue);
             };
             element.isChecked = function () {
@@ -271,7 +270,8 @@ function WD_findElement(selector, index) {
                 driver.executeScript("$(arguments[0]).next().show()", element._instance);   
             };
 
-            //the Mouse class is not fully realised in webdriver-sync yet, so hover and rClick look a bit clumsy
+            //the Mouse class is not fully realised in webdriver-sync yet, 
+            //so hover and rClick look a bit clumsy
             element.hover = function hover() {
                 driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync());
             };
