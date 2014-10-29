@@ -311,8 +311,53 @@ function WD_findElement(selector, index) {
                 </code></pre>
                 <p>Here I'm joining the text in the elements into a single string (for easy comparison with expected values).</p>
 
-                <p>You may have noticed that we still don't have a $ method - that will come when we modularise our scripts</p>
+                <p>You may have noticed that we still don't have a $ method - that will come when we modularise our scripts.</p>
 
+
+                <h2>Browser navigation</h2>
+                <h3>Navigating to a page</h3>
+                <p>webdriver has a get() method to navigate to a URL, but that's a bit boring, so to save time only navigate if the page is different and log the timestamp and url for later troubleshooting:</p>
+                <pre><code>
+    function WD_go(url) {
+        if (driver.getCurrentUrl() != url) {
+            console.log(new Date());
+            console.log("NAVIGATING TO " + url);
+            driver.get(url);
+        }
+    }                
+                </code></pre>
+                <h3>Getting a JSON response</h3>
+                <p>Sometimes you don't want to test the data returned to a page, rather than the page itself. This is easy enough to do by running javascript in the browser instance (as we did for hover and other element methods above):</p>
+                <pre><code>
+    function WD_getJSON(url) {
+        var xhr = driver.executeScript(
+            "xhr = new XMLHttpRequest();" +
+            "xhr.open('GET', '" + url + "', false);" +
+            "xhr.send();" +
+            "return (xhr.status + '###' + xhr.responseText);"
+        );
+        xhr = xhr.split("###");
+        return {status: xhr[0], responseText: xhr[1]};
+    }
+                </code></pre>                
+                <h3>Checking headers</h3>
+                <p>Similarly, we can request just the headers for a particular response (for instance you might want to check for a 404 or a particular content-type):</p>
+                <pre><code>
+    function WD_getHeaders(url, specificHeader) {
+        var xhr_headers = driver.executeScript(
+            "xhr = new XMLHttpRequest();" +
+            "xhr.open('GET', '" + url + "', false);" +
+            "xhr.setRequestHeader('Accept-Encoding', 'gzip');" +
+            "xhr.send();" +
+            (specificHeader ? 
+                "return xhr.getResponseHeader('" + specificHeader + "');" : 
+                "return xhr.getAllResponseHeaders();"
+            )
+        );
+        return xhr_headers;
+    }
+                </code></pre>                
+            
 
                 <a href="modularScripts.html">Next: Modular scripts</a>
 
