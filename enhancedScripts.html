@@ -174,12 +174,12 @@
                 <li>Enumerate element lists</li>
                 </ul>
 
-                <p>Let's put all that together (extending the above $by method for parent selection:</p>
+                <p>Let's put all that together (extending the above $by method for parent selection):</p>
                 <pre><code>
 function WD_findElement(selector, index) {
 //will return multiple elements by default 
 //or a specific element if the index is provided
-//or the only element if only one is found
+//or a single element if only one is found
     
     if (!selector) {
         return null;
@@ -313,6 +313,13 @@ function WD_findElement(selector, index) {
 
                 <p>You may have noticed that we still don't have a $ method - that will come when we modularise our scripts.</p>
 
+                <h3>More readable selectors</h3>
+                <p>Even with the concise selector syntax, it may not be obvious what the selector refers to if it is particularly complex.</p>
+                <p>e.g. what happens if I click this?</p>
+                <pre><code>
+    $("//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]");
+                </code></pre>
+
 
                 <h2>Browser navigation</h2>
                 <h3>Navigating to a page</h3>
@@ -358,6 +365,8 @@ function WD_findElement(selector, index) {
     }
                 </code></pre>                
             
+                <h2>Waiting for elements</h2>
+                <p>I started using webdriver-sync before the WebDriverWait class was implemented and ended up writing my own waitFor method. This is used when there may be some delay in rendering an element. It has a default timeout that can be overriden.</p>
 
                 <a href="modularScripts.html">Next: Modular scripts</a>
 
