@@ -71,9 +71,12 @@
                 <h3>cssSelector is almost all we need</h3>
                 <p>cssSelector already covers us for class, id and tag selectors:</p>
                 <pre><code>
-    var tableBody = driver.findElement(By.cssSelector('tbody'));// i.e. tagName
-    var blueElements = driver.findElement(By.cssSelector('.blue'));// i.e. className
-    var specificElement = driver.findElement(By.cssSelector('#element13'));// i.e. id
+    // By tagName
+    var tableBody = driver.findElement(By.cssSelector('tbody'));
+    // By className
+    var blueElements = driver.findElement(By.cssSelector('.blue'));
+    // By id
+    var silicon = driver.findElement(By.cssSelector('#element13'));
                 </code></pre>
 
 
