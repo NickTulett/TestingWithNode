@@ -327,7 +327,7 @@ function WD_findElement(selector, index) {
     }                
                 </code></pre>
                 <h3>Getting a JSON response</h3>
-                <p>Sometimes you don't want to test the data returned to a page, rather than the page itself. This is easy enough to do by running javascript in the browser instance (as we did for hover and other element methods above):</p>
+                <p>Sometimes you just want to test the data returned to a page, rather than the page itself. This is easy enough to do by running javascript in the browser instance (as we did for hover and other element methods above):</p>
                 <pre><code>
     function WD_getJSON(url) {
         var xhr = driver.executeScript(
