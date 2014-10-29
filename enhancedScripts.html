@@ -72,12 +72,56 @@
                 <p>cssSelector already covers us for class, id and tag selectors:</p>
                 <pre><code>
     // By tagName
-    var tableBody = driver.findElement(By.cssSelector('tbody'));
+    var tableBody = driver.findElement(By.cssSelector("tbody"));
+    
     // By className
-    var blueElements = driver.findElement(By.cssSelector('.blue'));
+    var blueElements = driver.findElements(By.cssSelector(".blue"));
+    
     // By id
-    var silicon = driver.findElement(By.cssSelector('#element13'));
+    var silicon = driver.findElement(By.cssSelector("#element13"));
                 </code></pre>
+                
+                <h3>Text content and Xpath selectors</h3>
+                <p>I haven't found linkText to be useful and just use partialLinkText for links. Obviously this depends on how uniquely your links are worded.</p>
+                <p>Generalising the text selectors for any element means relying on Xpath:</p>
+    // By exact text content
+    var abortButton = driver.findElement(
+        By.xpath("//*[text()='Abort!']"));
+    
+    // By contains text
+    var allTheThings = driver.findElements(
+        By.xpath("//*[contains(text(),'Thing')]"));
+                </code></pre>
+        
+                <h3>Better selectors</h3>
+                <p>So far all we've done is remove some of the redundant selector types and generalise the text ones. The syntax still isn't exactly concise.</p>
+                <p>This is where we look back and say "What would jQuery do?". Well, something like this:</p>
+    // By tagName
+    var tableBody = $("tbody");
+    
+    // By className
+    var blueElements = $(".blue");
+    
+    // By id
+    var silicon = $("#element13");
+    
+    // By exact text content 
+    // (note the nested quotes now)
+    var abortButton = $("'Abort!'");
+    
+    // By contains text
+    var allTheThings = $("*Thing*");
+    
+    // By explicit Xpath
+    var bestOption = 
+        $("//option[@value='best']");
+
+    // By Angular parameter
+    var uploads = 
+        $("@ng-repeat='file in uploadedFiles'");
+                </code></pre>
+
+
 
 
 
