@@ -84,6 +84,7 @@
                 <h3>Text content and Xpath selectors</h3>
                 <p>I haven't found linkText to be useful and just use partialLinkText for links. Obviously this depends on how uniquely your links are worded.</p>
                 <p>Generalising the text selectors for any element means relying on Xpath:</p>
+                <pre><code>
     // By exact text content
     var abortButton = driver.findElement(
         By.xpath("//*[text()='Abort!']"));
@@ -96,6 +97,7 @@
                 <h3>Better selectors</h3>
                 <p>So far all we've done is remove some of the redundant selector types and generalise the text ones. The syntax still isn't exactly concise.</p>
                 <p>This is where we look back and say "What would jQuery do?". Well, something like this:</p>
+                <pre><code>
     // By tagName
     var tableBody = $("tbody");
     
