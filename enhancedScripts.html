@@ -19,7 +19,7 @@
         <div class="inner">
 
             <header>
-                <h1>Readable, modular test scripts</h1>
+                <h1>Readable test scripts</h1>
                 <h2></h2>
             </header>
 <!-- 
@@ -174,8 +174,135 @@
                 <li>Enumerate element lists</li>
                 </ul>
 
+                <p>Let's put all that together (extending the above $by method for parent selection:</p>
+                <pre><code>
+function WD_findElement(selector, index) {
+//will return multiple elements by default 
+//or a specific element if the index is provided
+//or the only element if only one is found
+    
+    if (!selector) {
+        return null;
+    }
 
-                <a href="uploadsDownloads.html">Next: Uploads and Downloads</a>
+    function $by(selector) {
+    //parse short selectors
+        var by = selector.slice(0,1);
+        if (by.match(/(\.|#|\w)/)) {
+            by = "cssSelector";
+        }
+        if (by === "*") {
+            by = "xpath";
+            selector = "//*[contains(text(),'" 
+            + selector.slice(1, -1) + "')]";
+        }
+        if (by === "'") {
+                by = "xpath";
+                selector = "//*[text()=" + selector + "]";
+        }
+        if (by === "@") {
+                by = "xpath";
+                selector = "//*[" + selector + "]";
+        }
+        if (selector.slice(0,2) === "//") {
+            by = "xpath";
+        }       
+        if (selector === "parent") {
+            by = "xpath";
+            selector = "..";
+        }
+        console.log("LOCATING ELEMENT " + selector + " BY " + by);
+        return By[by](selector);            
+    }
+
+    var element;
+    
+    try {
+        element = driver.findElements($by(selector));
+    } catch (e) {
+    //return an object with length zero if anything failed
+        return {
+            length: 0
+        };
+    }
+
+    //return specific element if index is provided
+    var indexSet = (typeof index === "number");
+    var elementIndex = index || 0;
+    if (element) {
+        if ((!element.length) || (indexSet && indexSet > element.length)) {
+            //element is not there or index is too high
+            element.isDisplayed = function elementNotPresent() {
+                return false;
+            };
+            return element;
+        }
+
+        if ((element.length === 1) || indexSet) {
+            //return a single element
+            //augmented with useful methods
+            
+            element.selector = selector;
+            element = element[elementIndex];
+
+            //allow the selector to be chained to select child elements
+            element["$"] = function subElement(sel, subindex) {
+                return WD_findElement(sel, element, subindex);
+            };
+
+            //these use standard webdriver WebElement methods
+            element.set = function setValue(newValue) {
+                console.log("SETTING VALUE " + (selector.match(/password/) ? "********" : ("" + newValue)));
+                return element.sendKeys(newValue);
+            };
+            element.isChecked = function () {
+                return element.getAttribute("checked") === true;
+            };
+            
+            //scrollTo, trigger and dropdown interact with the element 
+            //by using javascript within the browser itself
+            element.scrollTo = function scrollTo() {
+                driver.executeScript("arguments[0].scrollIntoView(true)", element._instance);
+            };
+            element.trigger = function trigger(action) {
+                driver.executeScript("$(arguments[0]).trigger('" + action + "')", element._instance);   
+            };
+            element.dropdown = function dropdown() {
+                driver.executeScript("$(arguments[0]).next().show()", element._instance);   
+            };
+
+            //the Mouse class is not fully realised in webdriver-sync yet, so hover and rClick look a bit clumsy
+            element.hover = function hover() {
+                driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync());
+            };
+            element.rClick = function rClick() {
+                driver.getMouse()._instance.contextClickSync(element._instance.getCoordinatesSync());
+            };
+
+            //for single element, provide a dummy forEach method
+            //so that higher-level scripts don't have to worry about
+            //traversing a lists of one element
+            element.forEach = function only(fn) {
+                return fn(element);
+            };
+            element.length = 1;
+        } else {
+            //return an array of augmented elements
+            //with a map method that can chain down to child elements
+            return element.map(function (_element) {
+                _element["$"] = function subElement(sel, subindex) {
+                    return WD_findElement(sel, _element, subindex);
+                };
+                return _element;
+            });
+        } 
+    } else {
+        console.error(selector + " not found");
+    }
+    return element;
+}
+                </code></pre>
+                <a href="modularScripts.html">Next: Modular scripts</a>
 
 
             </section>
