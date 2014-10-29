@@ -123,9 +123,36 @@
         $("@ng-repeat='file in uploadedFiles'");
                 </code></pre>
 
+                <p>OK so that's concise and consistent and reasonably easy to follow, so how is it done?
+                <pre><code>
+    function $by(selector) {
+        //first character indicates the selection type
+        var by = selector.slice(0,1);
 
+        if (by.match(/(\.|#|\w)/)) {
+                by = "cssSelector";
+        }
+        if (by === "*") {
+                by = "xpath";
+                selector = "//*[contains(text(),'" 
+                + selector.slice(1, -1) + "')]";
+        }
+        if (by === "'") {
+                by = "xpath";
+                selector = "//*[text()=" + selector + "]";
+        }
+        if (by === "@") {
+                by = "xpath";
+                selector = "//*[" + selector + "]";
+        }
+        if (selector.slice(0,2) === "//") {
+            by = "xpath";
+        }       
 
-
+        console.log("LOCATING ELEMENT " + selector + " BY " + by);
+        return By[by](selector);            
+    }
+                </code></pre>
 
                 <a href="uploadsDownloads.html">Next: Uploads and Downloads</a>
 
