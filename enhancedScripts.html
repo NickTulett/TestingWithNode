@@ -153,6 +153,27 @@
         return By[by](selector);            
     }
                 </code></pre>
+                <p>Note that this does not give us the $ method yet, we're reserving that for a general element handler, below.</p>
+
+                <h3>General element handler</h3>
+                <p>Selecting an element is only half the story, testing will involve reading its text, checking its properties, pushing its buttons, etc. So we extend our selector approach to dealing with elements generally.</p>
+                <p>What sorts of things will we do with elements?</p>
+                <ul>
+                <li>Select single elements</li>
+                <li>Select multiple elements</li>
+                <li>Select child element(s)</li>
+                <li>Select parent element</li>
+                <li>Click element</li>
+                <li>Right-click element</li>
+                <li>Hover over element</li>
+                <li>Scroll to element</li>
+                <li>Read element value</li>
+                <li>Set element value</li>
+                <li>Trigger element event</li>
+                <li>Show element's dropdown menu</li>
+                <li>Enumerate element lists</li>
+                </ul>
+
 
                 <a href="uploadsDownloads.html">Next: Uploads and Downloads</a>
 
