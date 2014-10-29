@@ -286,6 +286,7 @@ function WD_findElement(selector, index) {
                 return fn(element);
             };
             element.length = 1;
+            
         } else {
             //return an array of augmented elements
             //with a map method that can chain down to child elements
@@ -302,6 +303,17 @@ function WD_findElement(selector, index) {
     return element;
 }
                 </code></pre>
+                <p>An example of what you would do with a map method is extracting the text of a list of elements:</p>
+                <pre><code>
+    var legend = $(".nv-legendWrap text").map(function (barLegend) {
+        return barLegend.getText();
+    }).join();
+                </code></pre>
+                <p>Here I'm joining the text in the elements into a single string (for easy comparison with expected values).</p>
+
+                <p>You may have noticed that we still don't have a $ method - that will come when we modularise our scripts</p>
+
+
                 <a href="modularScripts.html">Next: Modular scripts</a>
 
 
