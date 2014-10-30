@@ -159,6 +159,58 @@ module.exports {
     }    
                 </code></pre>
 
+                <h2>Big Testing Object</h2>
+                <p>The tests are triggered as a node command line, so there is a file that contains a TESTS object which refers to each individual test script in the other files. It looks something like this:</p>
+                <pre><code class="javascript">
+//in ptl.js
+
+var TESTS = {
+
+    "Smoke": function (expectedBuildNumber, expectedArchiveNumber) {
+        expectedBuildNumber = expectedBuildNumber || "";
+        expectedArchiveNumber = expectedArchiveNumber || "";
+        if (expectedBuildNumber && expectedArchiveNumber) {
+            PTL.deploy(hgBranch, expectedArchiveNumber);
+        }
+
+        if (!this.RequestAuthentication()) {
+            return;
+        }
+        log.startCase("Log in");
+        Delay(5e3);
+        assert(PTL.url.match(/notAuthorized/), 
+            "Wrong pre-permission landing page url " + PTL.url);
+        
+        //...
+    }
+    ,"Other test": function () {
+        //do stuff
+    }   
+
+    //..and other tests
+}             
+
+    //then we read in the .js files that contain our other tests and add them to the TESTS object
+var testModules = ["admin", "SingleSite", "MultiSite", "Security", 
+    "Actuals", "Config", "Charts", "InternetExplorer"];
+
+testModules.forEach(function (testModule) {
+    var req = require("./" + testModule + ".js");
+    for (var test in req) {
+        TESTS[test] = req[test];
+    }
+});
+
+//then some other stuff to check which development branch we're on 
+//and use the correct host, which I won't show here
+                </code></pre>
+                <p>The command to run the test will be something like:</p>
+                <pre><code class="bash">
+    node ptl.js Chrome "POR-748"
+                </code></pre>
+
+
+
                 <a href="uploadsDownloads.html">Next: Uploads and Downloads</a>
 
 
