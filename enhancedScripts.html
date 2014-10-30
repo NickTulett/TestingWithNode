@@ -358,12 +358,12 @@ function WD_findElement(selector, index) {
                 </code></pre>
                 <p>So eventually we get from:</p>
                 <pre><code class="javascript">
-driver.findElements(By.xpath(
-    "//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]")).click();    
+    driver.findElements(By.xpath(
+        "//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]")).click();    
                 </code></pre>
                 <p>to:</p>
                 <pre><code class="javascript">
-click("Signed In User Link");                
+    click("Signed In User Link");                
                 </code></pre>
                 <p>Then you also get the benefit of only having to change the selector in one place in your scripts when it changes.</p>
                 
@@ -413,6 +413,80 @@ click("Signed In User Link");
             
                 <h2>Waiting for elements</h2>
                 <p>I started using webdriver-sync before the WebDriverWait class was implemented and ended up writing my own waitFor method. This is used when there may be some delay in rendering an element. It has a default timeout that can be overriden.</p>
+                <pre><code class="javascript">
+    function waitFor(msg, selector, index) {
+        var waitTime = 60;
+        //no point waiting for longer than a minute because request will have timed out
+
+        //arguments can be overriden depending on type
+        //should probably use a parameters object and keep it tidy
+        if (typeof msg == "number") {
+            waitTime = arguments[0];
+            msg = arguments[1];
+            selector = arguments[2];
+            index = arguments[3] || null;
+        }
+        //selector could be a bare selector or a locator (see above)
+        if (locators[msg]) {
+            selector = locators[msg];
+            msg = msg.toUpperCase();
+        }
+
+        var foundElement, elementList;
+        console.log("WAITING " + waitTime + " SECONDS FOR " + msg); 
+        while (!(foundElement = $(selector)).length) {
+            Delay(1e3, true);
+            --waitTime;
+            if (!waitTime) {
+                if (typeof arguments[3] !== "boolean") {
+                    log.error("TIMED OUT");
+                }
+                return false;
+            }
+        }
+        //handle single elements
+        if (foundElement.length === 1) {
+            while (!(foundElement = $(selector)).isDisplayed()) {
+                console.log("WAITING FOR " + msg + " TO APPEAR");
+                Delay(1e3);
+            }
+            return foundElement;
+        }
+        if (typeof index === "number") {
+            while (!(foundElement = $(selector)[index]).isDisplayed()) {
+                console.log("WAITING FOR " + msg + " TO APPEAR");
+                Delay(1e3);
+            }
+            return foundElement;
+        }
+
+        //found a list of elements
+        elementList = foundElement;
+        elementList.every(function (el) {
+            if (el.isDisplayed()) {
+                foundElement = el;
+                return false;
+            }
+            console.log("WAITING FOR " + msg + " TO APPEAR");
+            Delay(1e3);
+            return true;
+        });
+        return foundElement;
+    }
+                </code></pre>
+                <p>waitFor() will post a message to the log saying which element is being waited for and wait up to a minute (or a specified timeout value) before abandoning. There are a number of ways waitFor can be called:</p>
+                <pre><code class="javascript">
+    //using a locator (and default timeout)
+    waitFor("Utility Power Actuals Link");
+
+    //using a selector and index
+    waitFor("ACTUALS BUTTON", "'Sub-metering actuals'", 2);
+
+    //using a specific timeout
+    waitFor(20, "VARIANCE CHART", ".barchart");         
+                </code></pre>       
+
+
 
                 <a href="modularScripts.html">Next: Modular scripts</a>
 
