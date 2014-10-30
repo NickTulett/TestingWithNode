@@ -412,7 +412,7 @@ function WD_findElement(selector, index) {
                 </code></pre>                
             
                 <h2>Waiting for elements</h2>
-                <p>I started using webdriver-sync before the WebDriverWait class was implemented and ended up writing my own waitFor method. This is used when there may be some delay in rendering an element. It has a default timeout that can be overriden.</p>
+                <p>I started using webdriver-sync before the <a href="https://github.com/jsdevel/webdriver-sync/blob/master/test/classes/WebDriverWait.js">WebDriverWait</a> class was implemented and ended up writing my own waitFor method. This is used when there may be some delay in rendering an element. It has a default timeout that can be overriden.</p>
                 <pre><code class="javascript">
     function waitFor(msg, selector, index) {
         var waitTime = 60;
