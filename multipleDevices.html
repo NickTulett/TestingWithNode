@@ -79,7 +79,7 @@
                 <p>If you don't have an iPad, you can use the same process to run the tests in IOS Simulator.</p>
 
                 <h3>Running tests on Android</h3>
-                <p>Install chromedriver and the Android SDK using <a href="https://sites.google.com/a/chromium.org/chromedriver/getting-started/getting-started---android">these instructions.</p>
+                <p>Install chromedriver and the Android SDK using <a href="https://sites.google.com/a/chromium.org/chromedriver/getting-started/getting-started---android">these instructions.</a></p>
                 <p>Attach the android device with USB and put it into developer mode using <a href="http://developer.android.com/tools/help/adb.html">the 7-tap method.</a></p>
                 <p>Then start the adb server and chromedriver on your development box.</p>
                 <pre><code class="bash">
@@ -97,7 +97,8 @@
     caps.setCapability("chromeOptions", chromeOptions);
     driver = new wd["RemoteWebDriver"]("http://127.0.0.1:9515", caps);    
                 </code></pre>                
-                <p>You will see the correct port number when you start chromedriver.</p>
+                <p>You will see the correct port number to use in that last line when you start chromedriver.</p>
+                <p>The test will now run in Chrome on the android device</p>
                 <p>Note that some window methods will return errors, e.g. you cannot do this on android:</p>
                 <pre><code class="javascript">
     browser.manage().window().maximize();
