@@ -210,6 +210,7 @@ var TESTS = {
                 </code></pre>
                 <p>So ptl.js is called with command line arguments and has to launch the named browser and run the specified test.</p>
                 <pre><code class="javascript">
+//in ptl.js
     var driverType = process.argv[2];
     var jenkinsJob = process.argv[3];//the reason for the name will be apparent later
 
@@ -219,10 +220,11 @@ var TESTS = {
     //Creating PTL also instantiates the browser because
 
 
-    //in Portal.js
+//in Portal.js
+    //the module exports for Portal.js instantiates the browser, then returns the object
+    
     var WDS = require("./WD.js");//the webdriver-sync layer
 
-    //the module exports for Portal.js instantiates the browser, then returns the object
 module.exports  = function (browserType) {
     var WD = WDS(browserType);
 
@@ -240,6 +242,15 @@ module.exports  = function (browserType) {
     //and finally the browser is instantiated in WD.js which in turn returns a function
     //which takes the driverType parameter passed along from the original command line
     //and then returns the object with the webdriver-sync layer members
+
+//in WD.js
+
+    var wd = require("webdriver-sync");
+    var testing = require("./Testing.js");
+
+    var FirefoxProfile = require(testing.HOME
+        + "/node_modules/webdriver-sync/src/classes/FirefoxProfile.js");
+
 
 module.exports = function (driverType) {
     console.log(driverType);
@@ -291,7 +302,26 @@ module.exports = function (driverType) {
 }
                 </code></pre>
 
+                <h3>Running multiple tests</h3>
+                <p>We don't want to run the command line for every single test, but we can easily call multiple tests in a single script file:</p>
+                <pre><code class="javascript">
+//in one of our test script files
 
+module.exports = {
+  
+  //some individual tests named "POR-nnnn"
+  
+  ,"Single Site Tests": function () {
+        [
+            "POR-976", "POR-1056", "POR-966",
+            "POR-664", "POR-654", "POR-768", "POR-433","POR-657", 
+            "POR-813", "POR-837", "POR-694", "POR-1081", "POR-1078"
+        ].forEach(function (singleSiteTest) {
+            console.log("RUNNING SINGLE SITE TEST: " + singleSiteTest);
+            this[singleSiteTest]();            
+        }, this);
+    }                
+}
                 <a href="uploadsDownloads.html">Next: Uploads and Downloads</a>
 
 
