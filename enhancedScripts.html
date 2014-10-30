@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Testing With Node by NickTulett</title>
+</head>
+
+<body>
+    <div id="container">
+        <div class="inner">
+
+            <header>
+                <h1>Readable test scripts</h1>
+                <h2></h2>
+            </header>
+<!-- 
+            <section id="downloads" class="clearfix">
+                <a href="https://github.com/NickTulett/TestingWithNode/zipball/master" id="download-zip" class="button">
+                    <span>Download .zip</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode/tarball/master" id="download-tar-gz" class="button">
+                    <span>Download .tar.gz</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode" id="view-on-github" class="button">
+                    <span>View on GitHub</span>
+                </a>
+            </section>
+ -->
+            <hr>
+
+            <section id="main_content">
+                <h2>
+                    <a name="using-nodejs-a-an-automated-test-engine" class="anchor" href="#using-nodejs-a-an-automated-test-engine">
+                        <span class="octicon octicon-link"></span>
+                    </a>Better selectors</h2>
+                <p>Webdriver-sync is a wrapper around the java webdriver client and out of the box has a very wordy selector syntax (last line):</p>
+                <pre><code>
+    var wd = require("webdriver-sync");
+    var caps = new wd.DesiredCapabilities["chrome"]();
+    var driver = new wd["ChromeDriver"](caps);
+    var By = wd.By;
+    var elements = driver.findElements(By.tagName('html'));
+                </code></pre>
+                <p>Compared to established front-end frameworks such as jQuery, it's a lot of typing, so let's do something about that.</p>
+
+                <h3>Selector types</h3>
+                <p>What are the selector types in the <a href="https://github.com/jsdevel/webdriver-sync/blob/master/src/classes/By.js">By method</a>?</p>
+                <ul>
+                <li>className</li>
+                <li>cssSelector</li>
+                <li>id</li>
+                <li>name</li>
+                <li>tagName</li>
+                <li>xpath</li>
+                <li>linkText</li>
+                <li>partialLinkText</li>
+                </ul>
+                <p>The first 5 are standard HTML element properties and easily resolve to a jQuery selector syntax (other than "name", which I never use as a selector).</p>
+                <p>Xpath selectors are a law unto themselves, but can be very useful once you get your head around the syntax.</p>
+                <p>The last 2 are not typical in other selector libraries but can be very useful for testing, so we will implement those as well.</p>
+
+                <h3>cssSelector is almost all we need</h3>
+                <p>cssSelector already covers us for class, id and tag selectors:</p>
+                <pre><code>
+    // By tagName
+    var tableBody = driver.findElement(By.cssSelector("tbody"));
+    
+    // By className
+    var blueElements = driver.findElements(By.cssSelector(".blue"));
+    
+    // By id
+    var silicon = driver.findElement(By.cssSelector("#element14"));
+                </code></pre>
+                
+                <h3>Text content and Xpath selectors</h3>
+                <p>I haven't found linkText to be useful and just use partialLinkText for links. Obviously this depends on how uniquely your links are worded.</p>
+                <p>Generalising the text selectors for any element means relying on Xpath:</p>
+                <pre><code>
+    // By exact text content
+    var abortButton = driver.findElement(
+        By.xpath("//*[text()='Abort!']"));
+    
+    // By contains text
+    var allTheThings = driver.findElements(
+        By.xpath("//*[contains(text(),'Thing')]"));
+                </code></pre>
+        
+                <h3>Better selectors</h3>
+                <p>So far all we've done is remove some of the redundant selector types and generalise the text ones. The syntax still isn't exactly concise.</p>
+                <p>This is where we look back and say "What would jQuery do?". Well, something like this:</p>
+                <pre><code>
+    // By tagName
+    var tableBody = $("tbody");
+    
+    // By className
+    var blueElements = $(".blue");
+    
+    // By id
+    var silicon = $("#element14");
+    
+    // By exact text content 
+    // (note the nested quotes now)
+    var abortButton = $("'Abort!'");
+    
+    // By contains text
+    var allTheThings = $("*Thing*");
+    
+    // By explicit Xpath
+    var bestOption = 
+        $("//option[@value='best']");
+
+    // By Angular parameter
+    var uploads = 
+        $("@ng-repeat='file in uploadedFiles'");
+                </code></pre>
+
+                <p>OK so that's concise and consistent and reasonably easy to follow, so how is it done?
+                <pre><code>
+    function $by(selector) {
+        //first character indicates the selection type
+        var by = selector.slice(0,1);
+
+        if (by.match(/(\.|#|\w)/)) {
+                by = "cssSelector";
+        }
+        if (by === "*") {
+                by = "xpath";
+                selector = "//*[contains(text(),'" 
+                + selector.slice(1, -1) + "')]";
+        }
+        if (by === "'") {
+                by = "xpath";
+                selector = "//*[text()=" + selector + "]";
+        }
+        if (by === "@") {
+                by = "xpath";
+                selector = "//*[" + selector + "]";
+        }
+        if (selector.slice(0,2) === "//") {
+            by = "xpath";
+        }       
+
+        console.log("LOCATING ELEMENT " + selector + " BY " + by);
+        return By[by](selector);            
+    }
+                </code></pre>
+                <p>Note that this does not give us the $ method yet, we're reserving that for a general element handler, below.</p>
+
+                <h3>General element handler</h3>
+                <p>Selecting an element is only half the story, testing will involve reading its text, checking its properties, pushing its buttons, etc. So we extend our selector approach to dealing with elements generally.</p>
+                <p>What sorts of things will we do with elements?</p>
+                <ul>
+                <li>Select single elements</li>
+                <li>Select multiple elements</li>
+                <li>Select child element(s)</li>
+                <li>Select parent element</li>
+                <li>Click element</li>
+                <li>Right-click element</li>
+                <li>Hover over element</li>
+                <li>Scroll to element</li>
+                <li>Read element value</li>
+                <li>Set element value</li>
+                <li>Trigger element event</li>
+                <li>Show element's dropdown menu</li>
+                <li>Enumerate element lists</li>
+                </ul>
+
+                <p>Let's put all that together (extending the above $by method for parent selection):</p>
+                <pre><code>
+function WD_findElement(selector, index) {
+//will return multiple elements by default 
+//or a specific element if the index is provided
+//or a single element if only one is found
+    
+    if (!selector) {
+        return null;
+    }
+
+    function $by(selector) {
+    //parse short selectors
+        var by = selector.slice(0,1);
+        if (by.match(/(\.|#|\w)/)) {
+            by = "cssSelector";
+        }
+        if (by === "*") {
+            by = "xpath";
+            selector = "//*[contains(text(),'" 
+            + selector.slice(1, -1) + "')]";
+        }
+        if (by === "'") {
+                by = "xpath";
+                selector = "//*[text()=" + selector + "]";
+        }
+        if (by === "@") {
+                by = "xpath";
+                selector = "//*[" + selector + "]";
+        }
+        if (selector.slice(0,2) === "//") {
+            by = "xpath";
+        }       
+        if (selector === "parent") {
+            by = "xpath";
+            selector = "..";
+        }
+        console.log("LOCATING ELEMENT " + selector + " BY " + by);
+        return By[by](selector);            
+    }
+
+    var element;
+    
+    try {
+        element = driver.findElements($by(selector));
+    } catch (e) {
+    //return an object with length zero if anything failed
+        return {
+            length: 0
+        };
+    }
+
+    //return specific element if index is provided
+    var indexSet = (typeof index === "number");
+    var elementIndex = index || 0;
+    if (element) {
+        if ((!element.length) || (indexSet && indexSet > element.length)) {
+            //element is not there or index is too high
+            element.isDisplayed = function elementNotPresent() {
+                return false;
+            };
+            return element;
+        }
+
+        if ((element.length === 1) || indexSet) {
+            //return a single element
+            //augmented with useful methods
+            
+            element.selector = selector;
+            element = element[elementIndex];
+
+            //allow the selector to be chained to select child elements
+            element["$"] = function subElement(sel, subindex) {
+                return WD_findElement(sel, element, subindex);
+            };
+
+            //these use standard webdriver WebElement methods
+            element.set = function setValue(newValue) {
+                return element.sendKeys(newValue);
+            };
+            element.isChecked = function () {
+                return element.getAttribute("checked") === true;
+            };
+            
+            //scrollTo, trigger and dropdown interact with the element 
+            //by using javascript within the browser itself
+            element.scrollTo = function scrollTo() {
+                driver.executeScript("arguments[0].scrollIntoView(true)", element._instance);
+            };
+            element.trigger = function trigger(action) {
+                driver.executeScript("$(arguments[0]).trigger('" + action + "')", element._instance);   
+            };
+            element.dropdown = function dropdown() {
+                driver.executeScript("$(arguments[0]).next().show()", element._instance);   
+            };
+
+            //the Mouse class is not fully realised in webdriver-sync yet, 
+            //so hover and rClick look a bit clumsy
+            element.hover = function hover() {
+                driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync());
+            };
+            element.rClick = function rClick() {
+                driver.getMouse()._instance.contextClickSync(element._instance.getCoordinatesSync());
+            };
+
+            //for single element, provide a dummy forEach method
+            //so that higher-level scripts don't have to worry about
+            //traversing a lists of one element
+            element.forEach = function only(fn) {
+                return fn(element);
+            };
+            element.length = 1;
+            
+        } else {
+            //return an array of augmented elements
+            //with a map method that can chain down to child elements
+            return element.map(function (_element) {
+                _element["$"] = function subElement(sel, subindex) {
+                    return WD_findElement(sel, _element, subindex);
+                };
+                return _element;
+            });
+        } 
+    } else {
+        console.error(selector + " not found");
+    }
+    return element;
+}
+                </code></pre>
+                <p>An example of what you would do with a map method is extracting the text of a list of elements:</p>
+                <pre><code>
+    var legend = $(".nv-legendWrap text").map(function (barLegend) {
+        return barLegend.getText();
+    }).join();
+                </code></pre>
+                <p>Here I'm joining the text in the elements into a single string (for easy comparison with expected values).</p>
+
+                <p>You may have noticed that we still don't have a $ method - that will come when we modularise our scripts.</p>
+
+                <h3>More readable selectors</h3>
+                <p>Even with the concise selector syntax, it may not be obvious what the selector refers to if it is particularly complex.</p>
+                <p>e.g. what happens if I click this?</p>
+                <pre><code>
+    $("//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]");
+                </code></pre>
+
+
+                <h2>Browser navigation</h2>
+                <h3>Navigating to a page</h3>
+                <p>webdriver has a get() method to navigate to a URL, but that's a bit boring, so to save time only navigate if the page is different and log the timestamp and url for later troubleshooting:</p>
+                <pre><code>
+    function WD_go(url) {
+        if (driver.getCurrentUrl() != url) {
+            console.log(new Date());
+            console.log("NAVIGATING TO " + url);
+            driver.get(url);
+        }
+    }                
+                </code></pre>
+                <h3>Getting a JSON response</h3>
+                <p>Sometimes you just want to test the data returned to a page, rather than the page itself. This is easy enough to do by running javascript in the browser instance (as we did for hover and other element methods above):</p>
+                <pre><code>
+    function WD_getJSON(url) {
+        var xhr = driver.executeScript(
+            "xhr = new XMLHttpRequest();" +
+            "xhr.open('GET', '" + url + "', false);" +
+            "xhr.send();" +
+            "return (xhr.status + '###' + xhr.responseText);"
+        );
+        xhr = xhr.split("###");
+        return {status: xhr[0], responseText: xhr[1]};
+    }
+                </code></pre>                
+                <h3>Checking headers</h3>
+                <p>Similarly, we can request just the headers for a particular response (for instance you might want to check for a 404 or a particular content-type):</p>
+                <pre><code>
+    function WD_getHeaders(url, specificHeader) {
+        var xhr_headers = driver.executeScript(
+            "xhr = new XMLHttpRequest();" +
+            "xhr.open('GET', '" + url + "', false);" +
+            "xhr.setRequestHeader('Accept-Encoding', 'gzip');" +
+            "xhr.send();" +
+            (specificHeader ? 
+                "return xhr.getResponseHeader('" + specificHeader + "');" : 
+                "return xhr.getAllResponseHeaders();"
+            )
+        );
+        return xhr_headers;
+    }
+                </code></pre>                
+            
+                <h2>Waiting for elements</h2>
+                <p>I started using webdriver-sync before the WebDriverWait class was implemented and ended up writing my own waitFor method. This is used when there may be some delay in rendering an element. It has a default timeout that can be overriden.</p>
+
+                <a href="modularScripts.html">Next: Modular scripts</a>
+
+
+            </section>
+
+            <footer>
+                Testing With Node is maintained by <a href="https://github.com/NickTulett">NickTulett</a>
+                <br>This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+            </footer>
+
+
+        </div>
+    </div>
+</body>
+
+</html>
