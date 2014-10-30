@@ -223,7 +223,7 @@ var TESTS = {
     var WDS = require("./WD.js");//the webdriver-sync layer
 
     //the module exports for Portal.js instantiates the browser, then returns the object
-    module.exports  = function (browserType) {
+module.exports  = function (browserType) {
     var WD = WDS(browserType);
 
     return {
@@ -234,7 +234,7 @@ var TESTS = {
     
         //...etc.
 
-    }
+}
 
     
     //and finally the browser is instantiated in WD.js which in turn returns a function
@@ -249,22 +249,24 @@ module.exports = function (driverType) {
     if (driverType == "Remote") {
         caps = new wd.DesiredCapabilities["internetExplorer"]();
         driver = new wd["RemoteWebDriver"]("http://192.168.10.104:4444/wd/hub", caps);
-        testing.UPLOAD_HOME = "C:/Users/IEUser/Testing/Portal/";
-        testing.DOWNLOADS = "C:/Users/IEUser/Downloads/";
     } else {
         if (driverType == "IOS") {
             caps = new wd.DesiredCapabilities["ipad"]();
             driver = new wd["RemoteWebDriver"]("http://192.168.10.61:5555/wd/hub", caps);
         } else {
             if (driverType.match(/Firefox/i)) {
+                //stop prompts for download locations
                 profile = new FirefoxProfile();
                 profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "text/csv");
                 driver = new wd["FirefoxDriver"](profile); 
             } else {
                 if (driverType.match(/Chrome/i)) {
+                    //to stop warning banner in Chrome 35+
                     var chromeOptions = new wd.ChromeOptions();
-                    chromeOptions.addArguments("test-type");//to stop warning banner in Chrome 35+
+                    chromeOptions.addArguments("test-type");
                     caps = new wd.DesiredCapabilities["chrome"]();
+                    caps = new wd.DesiredCapabilities["chrome"]();
+                    caps.setCapability("chromeOptions", chromeOptions);
                     driver = new wd["ChromeDriver"](caps);
                 } else {
                     //internetExplorer probably
