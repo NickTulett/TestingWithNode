@@ -8,9 +8,12 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/highlight.min.js"></script>
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <script>hljs.initHighlightingOnLoad();</script>
     <title>Testing With Node by NickTulett</title>
 </head>
 
@@ -46,13 +49,13 @@
 
                 <h3>Running tests remotely.</h3>
                 <p>Normally you would instantiate a browser locally something like this:</p>
-                <pre><code>
+                <pre><code class="javascript">
     var wd = require("webdriver-sync");
     var caps = new wd.DesiredCapabilities["chrome"]();
     var driver = new wd["ChromeDriver"](caps);
                 </code></pre>
                 <p>To instantiate a browser on a remote machine (which has the appropriate webdriver installed) just include the machine's IP address and request a RemoteWebDriver:</p>
-                <pre><code>
+                <pre><code class="javascript">
     var wd = require("webdriver-sync");                
     var caps = new wd.DesiredCapabilities["internetExplorer"]();
     var driver = new wd["RemoteWebDriver"]
@@ -64,7 +67,7 @@
                 <p>You will need to enable developer mode on the iPad via Xcode on the Mac. In Xcode open the devices organiser, select the iPad and click "Use for Development"</p>
                 <p>Before running any tests, launch <a href="http://ios-driver.github.io/ios-driver/?page=setup">ios-server-standalone-n.n.n-SNAPSHOT.jar</a> in iTerm on the Mac with the -beta flag. You should now see the iPad connected via port 5555 (remember 4444 is already used for the local webdriver on the Mac).</p>
                 <p>You can now run tests on the iPad from the Mac (or any other machine using the remote driver option):</p>
-                <pre><code>
+                <pre><code class="javascript">
     var wd = require("webdriver-sync");                                
     var caps = new wd.DesiredCapabilities["ipad"]();
     var driver = new wd["RemoteWebDriver"]
