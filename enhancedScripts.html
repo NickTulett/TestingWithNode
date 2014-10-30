@@ -8,9 +8,12 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/highlight.min.js"></script>
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <script>hljs.initHighlightingOnLoad();</script>
     <title>Testing With Node by NickTulett</title>
 </head>
 
@@ -43,7 +46,7 @@
                         <span class="octicon octicon-link"></span>
                     </a>Better selectors</h2>
                 <p>Webdriver-sync is a wrapper around the java webdriver client and out of the box has a very wordy selector syntax (last line):</p>
-                <pre><code>
+                <pre><code class="javascript">
     var wd = require("webdriver-sync");
     var caps = new wd.DesiredCapabilities["chrome"]();
     var driver = new wd["ChromeDriver"](caps);
@@ -70,7 +73,7 @@
 
                 <h3>cssSelector is almost all we need</h3>
                 <p>cssSelector already covers us for class, id and tag selectors:</p>
-                <pre><code>
+                <pre><code class="javascript">
     // By tagName
     var tableBody = driver.findElement(By.cssSelector("tbody"));
     
@@ -84,7 +87,7 @@
                 <h3>Text content and Xpath selectors</h3>
                 <p>I haven't found linkText to be useful and just use partialLinkText for links. Obviously this depends on how uniquely your links are worded.</p>
                 <p>Generalising the text selectors for any element means relying on Xpath:</p>
-                <pre><code>
+                <pre><code class="javascript">
     // By exact text content
     var abortButton = driver.findElement(
         By.xpath("//*[text()='Abort!']"));
@@ -97,7 +100,7 @@
                 <h3>Better selectors</h3>
                 <p>So far all we've done is remove some of the redundant selector types and generalise the text ones. The syntax still isn't exactly concise.</p>
                 <p>This is where we look back and say "What would jQuery do?". Well, something like this:</p>
-                <pre><code>
+                <pre><code class="javascript">
     // By tagName
     var tableBody = $("tbody");
     
@@ -124,7 +127,7 @@
                 </code></pre>
 
                 <p>OK so that's concise and consistent and reasonably easy to follow, so how is it done?
-                <pre><code>
+                <pre><code class="javascript">
     function $by(selector) {
         //first character indicates the selection type
         var by = selector.slice(0,1);
@@ -175,7 +178,7 @@
                 </ul>
 
                 <p>Let's put all that together (extending the above $by method for parent selection):</p>
-                <pre><code>
+                <pre><code class="javascript">
 function WD_findElement(selector, index) {
 //will return multiple elements by default 
 //or a specific element if the index is provided
@@ -304,7 +307,7 @@ function WD_findElement(selector, index) {
 }
                 </code></pre>
                 <p>An example of what you would do with a map method is extracting the text of a list of elements:</p>
-                <pre><code>
+                <pre><code class="javascript">
     var legend = $(".nv-legendWrap text").map(function (barLegend) {
         return barLegend.getText();
     }).join();
@@ -316,7 +319,7 @@ function WD_findElement(selector, index) {
                 <h3>More readable selectors</h3>
                 <p>Even with the concise selector syntax, it may not be obvious what the selector refers to if it is particularly complex.</p>
                 <p>e.g. what happens if I click this?</p>
-                <pre><code>
+                <pre><code class="javascript">
     $("//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]");
                 </code></pre>
 
@@ -324,7 +327,7 @@ function WD_findElement(selector, index) {
                 <h2>Browser navigation</h2>
                 <h3>Navigating to a page</h3>
                 <p>webdriver has a get() method to navigate to a URL, but that's a bit boring, so to save time only navigate if the page is different and log the timestamp and url for later troubleshooting:</p>
-                <pre><code>
+                <pre><code class="javascript">
     function WD_go(url) {
         if (driver.getCurrentUrl() != url) {
             console.log(new Date());
@@ -335,7 +338,7 @@ function WD_findElement(selector, index) {
                 </code></pre>
                 <h3>Getting a JSON response</h3>
                 <p>Sometimes you just want to test the data returned to a page, rather than the page itself. This is easy enough to do by running javascript in the browser instance (as we did for hover and other element methods above):</p>
-                <pre><code>
+                <pre><code class="javascript">
     function WD_getJSON(url) {
         var xhr = driver.executeScript(
             "xhr = new XMLHttpRequest();" +
@@ -349,7 +352,7 @@ function WD_findElement(selector, index) {
                 </code></pre>                
                 <h3>Checking headers</h3>
                 <p>Similarly, we can request just the headers for a particular response (for instance you might want to check for a 404 or a particular content-type):</p>
-                <pre><code>
+                <pre><code class="javascript">
     function WD_getHeaders(url, specificHeader) {
         var xhr_headers = driver.executeScript(
             "xhr = new XMLHttpRequest();" +
