@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/highlight.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script>hljs.initHighlightingOnLoad();</script>
+    <title>Testing With Node by NickTulett</title>
+</head>
+
+<body>
+    <div id="container">
+        <div class="inner">
+
+            <header>
+                <h1>Modular test scripts</h1>
+                <h2></h2>
+            </header>
+<!-- 
+            <section id="downloads" class="clearfix">
+                <a href="https://github.com/NickTulett/TestingWithNode/zipball/master" id="download-zip" class="button">
+                    <span>Download .zip</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode/tarball/master" id="download-tar-gz" class="button">
+                    <span>Download .tar.gz</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode" id="view-on-github" class="button">
+                    <span>View on GitHub</span>
+                </a>
+            </section>
+ -->
+            <hr>
+
+            <section id="main_content">
+                <h2>
+                    <a name="using-nodejs-a-an-automated-test-engine" class="anchor" href="#using-nodejs-a-an-automated-test-engine">
+                        <span class="octicon octicon-link"></span>
+                    </a>Breaking it down</h2>
+                <p>After you've written a few tests scripts, you don't really want all of them in one text file. I decided to break mine down into 4 layers:</p>
+                <ol>
+                <li>Interacting directly with webdriver-sync</li>
+                <li>Routines generally useful for testing.</li>
+                <li>Specific interactions with the AUT.</li>
+                <li>High level scripts for individual features/bugs.</li>
+                </ol>
+                <p>node.js already has a way of writing scripts in a modular way. You simply write the script to return a modules.export object, whose members become available to any other script that "requires" that file, e.g:</p>
+                <pre><code class="javascript">
+    //in Testing.js
+module.exports = {
+
+    assert: function testing_assert(cond, errmsg) {
+        if (!cond) {
+            log.error(errmsg);
+        }
+        return cond;
+    },
+
+    files: {
+        wipeFolder: function files_wipeFolder(path, matching) {
+            matching = matching || /./;
+            fs.readdirSync(path).forEach(function (fileName) {
+                if (fileName.match(matching)) {
+                    fs.unlinkSync(path + "/" + fileName);
+                }
+            });    
+        }
+    },  
+
+    log: {
+        //various log methods and properties
+    }
+}
+    
+    //then in a higher level script file
+    var testing = require("./Testing.js");
+
+    testing.files.wipeFolder("/home/tester/downloads/", "csv");
+    
+    assert($(".welcomeMessage").getText() === "Hello", 
+        "Wrong welcome message");
+
+                </code></pre>
+                <h3>webdriver-sync layer</h3>
+                <p>We've seen a lot of this layer already in the previous page when discussing the selector syntax and even earlier when talking about instantiating browsers.</p>
+
+                <h3>Testing layer</h3>
+                <p>As shown above, I've got routines for dealing with asserts, the local filesystem, logging (including marking the starting and ending of individual test cases) and starting and stopping timers.</p>
+
+                <h3>AUT layer</h3>
+                <p>This is an attempt to abstract the business logic of the website away from its implementation. This is where I identified the locators discussed in the previous page. It also handles user admin, including logging in and out. There are also routines specific to the website's functionality, such as extracting values out of charts, filtering data as well as low-level server interactions such as tailing logs and dumping the database. The latter are implemented using the execSync npm module:</p>
+                <pre><code class="javascript">
+    var sh = require("execSync");
+module.exports {
+    //other business layer methods    
+    ,host: "testserver.acme.com"
+    ,ssh: function PTL_ssh(commands, user, stdout) {
+        console.log("STARTING SSH SESSION");
+        if (typeof user == "string") {
+            user = user || "tester";
+        } else {
+            stdout = user;
+            user = "tester";
+        }
+        if (typeof commands == "string") {
+            commands = [commands];
+        }
+        //either execute something quietly
+        if (!stdout) {
+            return sh.run("ssh " + user + "@" + this.host + " \"" + commands.join("; ") + ";exit\"");
+        }
+        //or return the stdout from the command
+        return sh.exec("ssh " + user + "@" + this.host + " \"" + commands.join("; ") + ";exit\"").stdout;
+    }
+
+    ,taillog: function PTL_tailllog(n) {
+        n = n || 10;
+        console.log("FETCHING LAST " + n + " LINES OF THE LOG");
+        return sh.exec("ssh tester@" + this.host + " \" tail -n " + n + " /var/log/tomcat7/application.log\"").stdout;
+    }
+}
+
+                </code></pre>                
+
+                <h3>High-level script layer</h3>
+                <p>By the time we get to this layer, it shouldn't look much like a webdriver script (or javascript for that matter) but be a human-readable sequence of interactions and checks, e.g.</p>
+
+                <pre><code class="javascript">
+    //PTL is the AUT and "POR-748" is the related JIRA issue
+    "POR-748": function() {
+        log.startCase("Create a new organization");
+        PTL.signIn();
+        $("'Admin'").click();
+        PTL.waitFor("ADMIN PAGE", "^Organization").hover();
+        Delay(1e3);
+        $("'New'", 0).click();
+        PTL.waitFor("NEW ORGANIZATION PAGE", "#name").set("Acme");
+        $("#newUserEmailToAddress").set("new.user@acme.com");
+        $("#agreedLicense").click();
+        $("#create").click();
+
+        log.startCase("Checking log for recent errors");
+        var taillog = PTL.taillog(2);
+        console.log(taillog);
+        assert(!taillog.match(/ERROR/),
+            "Errors logged when creating a new organisation");
+    }    
+                </code></pre>
+
+                <a href="uploadsDownloads.html">Next: Uploads and Downloads</a>
+
+
+            </section>
+
+            <footer>
+                Testing With Node is maintained by <a href="https://github.com/NickTulett">NickTulett</a>
+                <br>This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+            </footer>
+
+
+        </div>
+    </div>
+</body>
+
+</html>
