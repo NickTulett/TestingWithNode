@@ -191,24 +191,103 @@ var TESTS = {
 }             
 
     //then we read in the .js files that contain our other tests and add them to the TESTS object
-var testModules = ["admin", "SingleSite", "MultiSite", "Security", 
-    "Actuals", "Config", "Charts", "InternetExplorer"];
+    var testModules = ["admin", "SingleSite", "MultiSite", "Security", 
+        "Actuals", "Config", "Charts", "InternetExplorer"];
 
-testModules.forEach(function (testModule) {
-    var req = require("./" + testModule + ".js");
-    for (var test in req) {
-        TESTS[test] = req[test];
-    }
-});
+    testModules.forEach(function (testModule) {
+        var req = require("./" + testModule + ".js");
+        for (var test in req) {
+            TESTS[test] = req[test];
+        }
+    });
 
-//then some other stuff to check which development branch we're on 
-//and use the correct host, which I won't show here
+    //then some other stuff to check which development branch we're on 
+    //and use the correct host, which I won't show here
                 </code></pre>
                 <p>The command to run the test will be something like:</p>
                 <pre><code class="bash">
     node ptl.js Chrome "POR-748"
                 </code></pre>
+                <p>So ptl.js is called with command line arguments and has to launch the named browser and run the specified test.</p>
+                <pre><code class="javascript">
+    var driverType = process.argv[2];
+    var jenkinsJob = process.argv[3];//the reason for the name will be apparent later
 
+    //here is where it gets tricky
+    PTL = require("./Portal.js")(driverType);
+    //PTL is now an object that contains the AUT layer (in this case the AUT is "Portal")
+    //Creating PTL also instantiates the browser because
+
+
+    //in Portal.js
+    var WDS = require("./WD.js");//the webdriver-sync layer
+
+    //the module exports for Portal.js instantiates the browser, then returns the object
+    module.exports  = function (browserType) {
+    var WD = WDS(browserType);
+
+    return {
+
+        locators: {
+        //...
+        }
+    
+        //...etc.
+
+    }
+
+    
+    //and finally the browser is instantiated in WD.js which in turn returns a function
+    //which takes the driverType parameter passed along from the original command line
+    //and then returns the object with the webdriver-sync layer members
+
+module.exports = function (driverType) {
+    console.log(driverType);
+    var driver, caps;
+    var profile = null;
+
+    if (driverType == "Remote") {
+        caps = new wd.DesiredCapabilities["internetExplorer"]();
+        driver = new wd["RemoteWebDriver"]("http://192.168.10.104:4444/wd/hub", caps);
+        testing.UPLOAD_HOME = "C:/Users/IEUser/Testing/Portal/";
+        testing.DOWNLOADS = "C:/Users/IEUser/Downloads/";
+    } else {
+        if (driverType == "IOS") {
+            caps = new wd.DesiredCapabilities["ipad"]();
+            driver = new wd["RemoteWebDriver"]("http://192.168.10.61:5555/wd/hub", caps);
+        } else {
+            if (driverType.match(/Firefox/i)) {
+                profile = new FirefoxProfile();
+                profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "text/csv");
+                driver = new wd["FirefoxDriver"](profile); 
+            } else {
+                if (driverType.match(/Chrome/i)) {
+                    var chromeOptions = new wd.ChromeOptions();
+                    chromeOptions.addArguments("test-type");//to stop warning banner in Chrome 35+
+                    caps = new wd.DesiredCapabilities["chrome"]();
+                    driver = new wd["ChromeDriver"](caps);
+                } else {
+                    //internetExplorer probably
+                    driver = new wd[driverType + "Driver"]();
+                }
+            }
+        }
+    }
+
+
+    return {
+
+        driver: driver,
+        findElement: function WD_findElement(selector, index) {
+            //...we've seen this before
+        }
+
+        //...etc
+
+    }
+    
+}
+                </code></pre>
 
 
                 <a href="uploadsDownloads.html">Next: Uploads and Downloads</a>
