@@ -79,7 +79,30 @@
                 <p>If you don't have an iPad, you can use the same process to run the tests in IOS Simulator.</p>
 
                 <h3>Running tests on Android</h3>
-                <p>Use <a href="http://selendroid.io/">Selendroid</a>.</p>
+                <p>Install chromedriver and the Android SDK using <a href="https://sites.google.com/a/chromium.org/chromedriver/getting-started/getting-started---android">these instructions.</p>
+                <p>Attach the android device with USB and put it into developer mode using <a href="http://developer.android.com/tools/help/adb.html">the 7-tap method.</a></p>
+                <p>Then start the adb server and chromedriver on your development box.</p>
+                <pre><code class="bash">
+    adb start-server
+
+    ./chromedriver
+                </code></pre>
+                <p>The android device will now be available as a RemoteWebDriver:</p>
+                <pre><code class="javascript">
+    var chromeOptions = new wd.ChromeOptions();
+    //setExperimentalOption is not implemented correctly in webdriver-sync, 
+    //so we have to drill down to the underlying instance method
+    chromeOptions._instance.setExperimentalOptionSync("androidPackage", "com.android.chrome");
+    caps = new wd.DesiredCapabilities["chrome"]();
+    caps.setCapability("chromeOptions", chromeOptions);
+    driver = new wd["RemoteWebDriver"]("http://127.0.0.1:9515", caps);    
+                </code></pre>                
+                <p>You will see the correct port number when you start chromedriver.</p>
+                <p>Note that some window methods will return errors, e.g. you cannot do this on android:</p>
+                <pre><code class="javascript">
+    browser.manage().window().maximize();
+                </code></pre>
+
                 
                 <a href="enhancedScripts.html">Next: Readable test scripts</a>
 
