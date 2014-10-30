@@ -325,8 +325,10 @@ function WD_findElement(selector, index) {
                 <p>This where I introduced the idea of locators to keep the scripts readable, by giving selectors more human-friendly aliases:</p>
                 <pre><code class="javascript">
     locators = {
-        "Signed In User Link": "//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]",
-        "Other complicated selector": "horrendous Xpath"
+        "Signed In User Link": 
+            "//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]",
+        "Other complicated selector": 
+            "horrendous Xpath"
         //etc.
     }
                 </code></pre>
@@ -335,7 +337,7 @@ function WD_findElement(selector, index) {
     function button(buttonorlink, index) {
         return $(locators[buttonorlink] || null, index);
     }
-    functionlink(buttonorlink, index) {
+    function link(buttonorlink, index) {
         return button(buttonorlink, index);
     }
     function tab(tabName, index) {
@@ -356,7 +358,8 @@ function WD_findElement(selector, index) {
                 </code></pre>
                 <p>So eventually we get from:</p>
                 <pre><code class="javascript">
-driver.findElements(By.xpath("//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]")).click();    
+driver.findElements(By.xpath(
+    "//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]")).click();    
                 </code></pre>
                 <p>to:</p>
                 <pre><code class="javascript">
