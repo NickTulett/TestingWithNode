@@ -83,7 +83,7 @@ module.exports = {
     //then in a higher level script file
     var testing = require("./Testing.js");
 
-    testing.files.wipeFolder("/home/tester/downloads/", "csv");
+    testing.files.wipeFolder("/home/tester/downloads/", /\.csv$/);
     
     assert($(".welcomeMessage").getText() === "Hello", 
         "Wrong welcome message");
@@ -99,8 +99,9 @@ module.exports = {
                 <p>This is an attempt to abstract the business logic of the website away from its implementation. This is where I identified the locators discussed in the previous page. It also handles user admin, including logging in and out. There are also routines specific to the website's functionality, such as extracting values out of charts, filtering data as well as low-level server interactions such as tailing logs and dumping the database. The latter are implemented using the execSync npm module:</p>
                 <pre><code class="javascript">
     var sh = require("execSync");
+
 module.exports {
-    //other business layer methods    
+    //other business layer object members    
     ,host: "testserver.acme.com"
     ,ssh: function PTL_ssh(commands, user, stdout) {
         console.log("STARTING SSH SESSION");
@@ -115,16 +116,19 @@ module.exports {
         }
         //either execute something quietly
         if (!stdout) {
-            return sh.run("ssh " + user + "@" + this.host + " \"" + commands.join("; ") + ";exit\"");
+            return sh.run("ssh " + user + "@" + this.host + " \"" 
+                + commands.join("; ") + ";exit\"");
         }
         //or return the stdout from the command
-        return sh.exec("ssh " + user + "@" + this.host + " \"" + commands.join("; ") + ";exit\"").stdout;
+        return sh.exec("ssh " + user + "@" + this.host + " \"" 
+            + commands.join("; ") + ";exit\"").stdout;
     }
 
     ,taillog: function PTL_tailllog(n) {
         n = n || 10;
         console.log("FETCHING LAST " + n + " LINES OF THE LOG");
-        return sh.exec("ssh tester@" + this.host + " \" tail -n " + n + " /var/log/tomcat7/application.log\"").stdout;
+        return sh.exec("ssh tester@" + this.host + " \" tail -n " 
+            + n + " /var/log/tomcat7/application.log\"").stdout;
     }
 }
 
@@ -139,7 +143,7 @@ module.exports {
         log.startCase("Create a new organization");
         PTL.signIn();
         $("'Admin'").click();
-        PTL.waitFor("ADMIN PAGE", "^Organization").hover();
+        PTL.waitFor("ADMIN PAGE", "'Organization'").hover();
         Delay(1e3);
         $("'New'", 0).click();
         PTL.waitFor("NEW ORGANIZATION PAGE", "#name").set("Acme");
