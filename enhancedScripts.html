@@ -322,8 +322,48 @@ function WD_findElement(selector, index) {
                 <pre><code class="javascript">
     $("//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]");
                 </code></pre>
-
-
+                <p>This where I introduced the idea of locators to keep the scripts readable, by giving selectors more human-friendly aliases:</p>
+                <pre><code class="javascript">
+    locators = {
+        "Signed In User Link": "//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]",
+        "Other complicated selector": "horrendous Xpath"
+        //etc.
+    }
+                </code></pre>
+                <p>Then I decided to have an alternative to things like $([locator resolved to selector]).click():</p>
+                <pre><code class="javascript">
+    function button(buttonorlink, index) {
+        return $(locators[buttonorlink] || null, index);
+    }
+    functionlink(buttonorlink, index) {
+        return button(buttonorlink, index);
+    }
+    function tab(tabName, index) {
+        return button(tabName + " Tab", index);
+    }
+    function click(buttonorlink, checkStateOrIndex) {
+        if (typeof checkStateOrIndex == "number") {//actually the button index
+            return button(buttonorlink, checkStateOrIndex).click();
+        }
+        var clickable = button(buttonorlink);
+        if (clickable) {
+            //mung checked atribute to a Boolean
+            if (arguments.length == 1 || (!!clickable.getAttribute("checked") != checkState)) {
+                clickable.click();
+            }
+        }
+    }
+                </code></pre>
+                <p>So eventually we get from:</p>
+                <pre><code class="javascript">
+driver.findElements(By.xpath("//ul[contains(@class, 'navbar')]//a[starts-with(@href, '/user/show/')]")).click();    
+                </code></pre>
+                <p>to:</p>
+                <pre><code class="javascript">
+click("Signed In User Link");                
+                </code></pre>
+                <p>Then you also get the benefit of only having to change the selector in one place in your scripts when it changes.</p>
+                
                 <h2>Browser navigation</h2>
                 <h3>Navigating to a page</h3>
                 <p>webdriver has a get() method to navigate to a URL, but that's a bit boring, so to save time only navigate if the page is different and log the timestamp and url for later troubleshooting:</p>
