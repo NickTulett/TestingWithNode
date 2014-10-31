@@ -220,7 +220,7 @@ var TESTS = {
     //Creating PTL also instantiates the browser because
 
 
-//in Portal.js
+//in Portal.js - this is the AUT level
     //the module exports for Portal.js instantiates the browser, then returns the object
     
     var WDS = require("./WD.js");//the webdriver-sync layer
@@ -326,6 +326,39 @@ module.exports = {
                 <p>Then the command line would be:</p>
                 <pre><code class="bash">
     node ptl.js Chrome "Single Site Tests"
+                </code></pre>
+
+                <h2>So where is that $() method you promised?</h2>
+                <p>That appears at the AUT level. Portal.js actually starts like this:</p>
+                <pre><code class="javascript">
+    var WDS         = require("./WD.js");
+    var path        = require("path");
+    var testing     = require("./Testing.js");
+    var log         = testing.log;  
+    var timer       = testing.timer;
+    var fs          = require("fs");
+    var sh          = require("execSync");
+    
+module.exports  = function (browserType) {
+    var WD          = WDS(browserType);
+    var browser     = WD.driver;
+    var browserName = browser.getCapabilities().getBrowserName();
+
+    //here we are:
+    var $           = WD.findElement;
+    //that was it
+    
+    var go          = WD.go;
+    var getJSON     = WD.getJSON;
+    var getHeaders  = WD.getHeaders;
+    var browserLogs = WD.browserLogs;
+    var waterfall   = WD.waterfall;
+
+
+    return {
+//specific locators
+        locators: {
+        //and so on
                 </code></pre>
                 
                 <a href="uploadsDownloads.html">Next: Uploads and Downloads</a>
