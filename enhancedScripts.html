@@ -109,6 +109,9 @@
     
     // By id
     var silicon = $("#element14");
+
+    //By partial link text
+    var nextPageLink = $("^Next");
     
     // By exact text content 
     // (note the nested quotes now)
@@ -121,7 +124,7 @@
     var bestOption = 
         $("//option[@value='best']");
 
-    // By Angular parameter
+    // By attribute
     var uploads = 
         $("@ng-repeat='file in uploadedFiles'");
                 </code></pre>
@@ -133,20 +136,24 @@
         var by = selector.slice(0,1);
 
         if (by.match(/(\.|#|\w)/)) {
-                by = "cssSelector";
+            by = "cssSelector";
+        }
+        if (by === "^") {
+            by = "partialLinkText";
+            selector = selector.slice(1);
         }
         if (by === "*") {
-                by = "xpath";
-                selector = "//*[contains(text(),'" 
-                + selector.slice(1, -1) + "')]";
+            by = "xpath";
+            selector = "//*[contains(text(),'" 
+            + selector.slice(1, -1) + "')]";
         }
         if (by === "'") {
-                by = "xpath";
-                selector = "//*[text()=" + selector + "]";
+            by = "xpath";
+            selector = "//*[text()=" + selector + "]";
         }
         if (by === "@") {
-                by = "xpath";
-                selector = "//*[" + selector + "]";
+            by = "xpath";
+            selector = "//*[" + selector + "]";
         }
         if (selector.slice(0,2) === "//") {
             by = "xpath";
@@ -193,6 +200,10 @@ function WD_findElement(selector, index) {
         var by = selector.slice(0,1);
         if (by.match(/(\.|#|\w)/)) {
             by = "cssSelector";
+        }
+        if (by === "^") {
+            by = "partialLinkText";
+            selector = selector.slice(1);
         }
         if (by === "*") {
             by = "xpath";
