@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/highlight.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script>hljs.initHighlightingOnLoad();</script>
+    <title>Testing With Node by NickTulett</title>
+</head>
+
+<body>
+    <div id="container">
+        <div class="inner">
+
+            <header>
+                <h1>Browser Logs</h1>
+                <h2></h2>
+            </header>
+<!-- 
+            <section id="downloads" class="clearfix">
+                <a href="https://github.com/NickTulett/TestingWithNode/zipball/master" id="download-zip" class="button">
+                    <span>Download .zip</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode/tarball/master" id="download-tar-gz" class="button">
+                    <span>Download .tar.gz</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode" id="view-on-github" class="button">
+                    <span>View on GitHub</span>
+                </a>
+            </section>
+ -->
+            <hr>
+
+            <section id="main_content">
+                <p>When you are investigating bugs in a website, it would be useful to know if the browser logged any javascript errors while the test was running. This is fairly straightforward for Chrome and Firefox. You can also request the full performance log showing the status and timing of every request. Be warned, though, the performance log can become enormous for all but the most trivial tests. Firefox is also quite chatty in its standard browser log, so I will only touch on using Chrome logs here. I will show how to parse the performance log for network request timings, but quite frankly, that's a job best left to <a href="webpagetest.html">webpagest.</a></p>
+                <p>Each log has an associated <a href="https://code.google.com/p/selenium/wiki/JsonWireProtocol#Log_Levels">level</a> (of detail)</p>
+
+                <h2>
+                    <a name="using-nodejs-a-an-automated-test-engine" class="anchor" href="#using-nodejs-a-an-automated-test-engine">
+                        <span class="octicon octicon-link"></span>
+                    </a>Enabling logging</h2>
+                <p>You enable the browser's logs when you instantiate the browser:</p>
+                <pre><code class="javascript">
+    var chromeOptions = new wd.ChromeOptions();
+    chromeOptions.addArguments("test-type");//to stop warning banner in Chrome 35+
+    caps = new wd.DesiredCapabilities["chrome"]();
+    caps.setCapability("chromeOptions", chromeOptions);
+
+    //enable logging in Chrome
+    var logPrefs = new wd.LoggingPreferences();
+    //only log javascript errors
+    logPrefs.enable("browser", wd.Level.SEVERE);
+    //log all performance - warning (again) this can be a LOT
+    logPrefs.enable("performance", wd.Level.INFO);
+    caps.setCapability("loggingPrefs", logPrefs);
+    driver = new wd["ChromeDriver"](caps);
+                </code></pre>
+
+                <h2>Parsing the browser log</h2>
+                <p>To get the browser log:</p>
+                <pre><code class="javascript">
+    var logErrors = driver.manage().logs().get("browser").getAll();
+    logErrors.forEach(function (logError) {
+        console.log(new Date(+logError.timestamp.longValue) + ": " + logError.message);
+    });
+                </code></pre>
+                <p>You get an array of objects with timestamp and message properties (corresponding to what you would see if you had Console open in Chrome Developer Tools).</p>
+
+                <h2>Parsing the performance log</h2>
+                <p>I'm just going to say one last time that this can produce a LOT of data.</p>
+                <p>Not surprisingly, you request the log like this:</p>
+                <pre><code class="javascript">
+    var perfLog = driver.manage().logs().get("performance").getAll();
+                </code></pre>                
+                <p>So what does the raw performance log look like?</p>
+                <pre><code class="javascript">
+    [{
+        "_instance": {},
+        "level": "INFO",
+        "message": "{\"message\":{\"method\":\"Timeline.started\",\"params\":{\"consoleTimeline\":false}},\"webview\":\"3139A36F-B1F7-6B65-DAFB-C372A1636555\"}",
+        "timestamp": 1414776397208
+    }, {
+        "_instance": {},
+        "level": "INFO",
+        "message": "{\"message\":{\"method\":\"Timeline.eventRecorded\",\"params\":{\"record\":{\"children\":[],\"data\":{},\"endTime\":66257151.351,\"startTime\":66257151.204,\"type\":\"Program\"}}},\"webview\":\"3139A36F-B1F7-6B65-DAFB-C372A1636555\"}",
+        "timestamp": 1414776397244
+    }, {
+        "_instance": {},
+        "level": "INFO",
+        "message": "{\"message\":{\"method\":\"Page.frameAttached\",\"params\":{\"frameId\":\"9.2\",\"parentFrameId\":\"9.1\"}},\"webview\":\"3139A36F-B1F7-6B65-DAFB-C372A1636555\"}",
+        "timestamp": 1414776397336
+    }, {
+        "_instance": {},
+        "level": "INFO",
+        "message": "{\"message\":{\"method\":\"Page.frameStartedLoading\",\"params\":{\"frameId\":\"9.2\"}},\"webview\":\"3139A36F-B1F7-6B65-DAFB-C372A1636555\"}",
+        "timestamp": 1414776397336
+    }, {
+        "_instance": {},
+        "level": "INFO",
+        "message": "{\"message\":{\"method\":\"Page.frameNavigated\",\"params\":{\"frame\":{\"id\":\"9.2\",\"loaderId\":\"9.3\",\"mimeType\":\"text/html\",\"name\":\"\",\"parentId\":\"9.1\",\"securityOrigin\":\"://\",\"url\":\"about:blank\"}}},\"webview\":\"3139A36F-B1F7-6B65-DAFB-C372A1636555\"}",
+        "timestamp": 1414776397336
+    }, {
+        "_instance": {},
+        "level": "INFO",
+        "message": "{\"message\":{\"method\":\"Page.frameStoppedLoading\",\"params\":{\"frameId\":\"9.2\"}},\"webview\":\"3139A36F-B1F7-6B65-DAFB-C372A1636555\"}",
+        "timestamp": 1414776397336
+    }...]
+                </code></pre>                
+                <p>Say what?</p>
+                <p>Yes, it's quite low level (possibly the same information as the timeline in Chrome Developer Tools), but it is possible to glean details of network request timings with some effort.</p>
+                <p>I'm just going to leave this here for the sake of interest, but it is more sensible to use webpagetest to do this. I make no apologies for the terseness of the code as you would be mad to do this anyway.</p>
+                <pre><code class="javascript">
+            var logs = driver.manage().logs().get("performance").getAll();
+            var requests = {};
+            var firstResponder = 0;
+            logs.forEach(function (plog) {
+                var msg = JSON.parse(plog.message).message;
+                var duration = 0;
+                //network request starts
+                if (msg.method == "Network.requestWillBeSent") {
+                    if (msg.params.timestamp > timeMark) {
+                        requests[msg.params.requestId] = requests[msg.params.requestId] || {
+                            "url": msg.params.request.url,
+                            "startTime": msg.params.timestamp,
+                            "offsetTime": 0,
+                            "ttfb": 0,
+                            "ttlb": 0,
+                            "transferTime": 0,
+                            "redirected": false,
+                            "failed": false,
+                            "fromCache": false,
+                            "bytes": 0
+                        };
+                        requests[msg.params.requestId]["redirected"] = 
+                            (msg.params["redirectResponse"] !== undefined);
+                        //base all offsetTimes on the first request
+                        if (firstResponder) {
+                            requests[msg.params.requestId]["offsetTime"] = 
+                                requests[msg.params.requestId]["startTime"] - firstResponder;
+                        } else {
+                            firstResponder = requests[msg.params.requestId]["startTime"];
+                        }
+                    }
+                }
+                if (requests[msg.params.requestId]) {
+                    //ttfb could come from dataReceived or responseReceived
+                    if ((msg.method == "Network.dataReceived") 
+                        && (!requests[msg.params.requestId]["ttfb"])) {
+                        requests[msg.params.requestId]["ttfb"] = msg.params.timestamp - 
+                            requests[msg.params.requestId]["startTime"];
+                    }
+                    if ((msg.method == "Network.responseReceived") 
+                        && !requests[msg.params.requestId]["ttfb"]
+                        && (msg.params["redirectResponse"] === undefined)) {
+                        //could be the first or last response for this request, 
+                        //so calculate ttfb, ttlb and transferTime
+                        duration = msg.params.timestamp - 
+                            requests[msg.params.requestId]["startTime"];
+                        requests[msg.params.requestId]["ttfb"] = duration;
+                        if (duration > requests[msg.params.requestId]["ttlb"]) {
+                            requests[msg.params.requestId]["ttlb"] = duration;
+                            requests[msg.params.requestId]["transferTime"] = 
+                                requests[msg.params.requestId]["ttlb"] - 
+                                requests[msg.params.requestId]["ttfb"];
+                        }
+                    }
+                    //response could also finish here
+                    if (msg.method == "Network.loadingFinished") {
+                        duration = msg.params.timestamp - 
+                            requests[msg.params.requestId]["startTime"];
+                        if (duration > requests[msg.params.requestId]["ttlb"]) {
+                            requests[msg.params.requestId]["ttlb"] = duration;
+                            requests[msg.params.requestId]["transferTime"] = 
+                                requests[msg.params.requestId]["ttlb"] - 
+                                requests[msg.params.requestId]["ttfb"];
+                        }
+                        requests[msg.params.requestId]["bytes"] += 
+                            +msg.params["encodedDataLength"];
+                    }
+                    //mark cached responses
+                    if ((msg.method == "Network.responseReceived") 
+                        && msg.params.response["fromDiskCache"]) {
+                        requests[msg.params.requestId]["fromCache"] = true; 
+                    }
+                    if (msg.method == "Network.requestServedFromCache") {
+                        requests[msg.params.requestId]["fromCache"] = true;
+                    }
+                    //mark failed responses
+                    if (msg.method == "Network.loadingFailed") {
+                        requests[msg.params.requestId]["failed"] = true;
+                    }   
+                }
+            });
+            fs.writeFileSync(testing.TEST_HOME + "perflog.json", JSON.stringify(requests));
+
+            return requests;
+        }
+                </code></pre>
+                <p>This translates the (numbered) network requests into something more readable with performance stats:</p>
+                <pre><code class="javascript">
+{
+    "26.1": {
+        "url": "http://foobar.com/auth/login?targetUri=%2Fexplore%2Findex",
+        "startTime": 1414776397.43785,
+        "offsetTime": 0,
+        "ttfb": 0.5678300857543945,
+        "ttlb": 0.5685598850250244,
+        "transferTime": 0.0007297992706298828,
+        "redirected": false,
+        "failed": false,
+        "fromCache": false,
+        "bytes": 5210
+    },
+    "26.2": {
+        "url": "http://foobar.com/0dc1d7a064e0/bundle-app-ie9_head.js",
+        "startTime": 1414776398.06587,
+        "offsetTime": 0.6280200481414795,
+        "ttfb": 0.03729987144470215,
+        "ttlb": 0.03937983512878418,
+        "transferTime": 0.0020799636840820312,
+        "redirected": false,
+        "failed": false,
+        "fromCache": false,
+        "bytes": 379
+    },
+    "26.3": {
+        "url": "http://foobar.com/0dc1d7a064e0/bundle-app-jquery_head.js",
+        "startTime": 1414776398.06744,
+        "offsetTime": 0.6295900344848633,
+        "ttfb": 0.09619998931884766,
+        "ttlb": 0.15544986724853516,
+        "transferTime": 0.0592498779296875,
+        "redirected": false,
+        "failed": false,
+        "fromCache": false,
+        "bytes": 33128
+    },
+    "26.4": {
+        "url": "http://foobar.com/0dc1d7a064e0/bundle-style_head.css",
+        "startTime": 1414776398.06819,
+        "offsetTime": 0.6303400993347168,
+        "ttfb": 0.07647991180419922,
+        "ttlb": 0.12150979042053223,
+        "transferTime": 0.04502987861633301,
+        "redirected": false,
+        "failed": false,
+        "fromCache": false,
+        "bytes": 29134
+    },
+    //etc.
+}
+                </code></pre>
+                <a href="webpagetest.html">Next: Doing this properly with Webpagetest</a>
+
+
+            </section>
+
+            <footer>
+                Testing With Node is maintained by <a href="https://github.com/NickTulett">NickTulett</a>
+                <br>This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+            </footer>
+
+
+        </div>
+    </div>
+</body>
+
+</html>
