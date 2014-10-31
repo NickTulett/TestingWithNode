@@ -49,7 +49,7 @@
                     </a>Handling Uploads</h2>
                 <p>A modern website should be handling uploads using the HTML5 file input element, such as:</p>
                 <pre><code class="html">
-    <input id="fileupload" class="fileupload" type="file" name="files[]" multiple="">                
+    &lt;input id="fileupload" class="fileupload" type="file" name="files[]" multiple="&gt;                
                 </code></pre>
                 <p>What this allows us to do is set the filepath directly on the element, so there is no need for any dialog handler. It really is this simple:</p>
                 <pre><code class="javascript">
@@ -67,9 +67,6 @@
 
     //We recognise the download button from the tooltip in this AUT
     $("//li[@tooltip='Export to CSV']/a/i").click(); 
-    if (browserName.toLowerCase() == "safari") {
-        $(".icon-file").trigger("click");
-    }
 
     //now poll the downloadFolder
     var csvCount = false;
