@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/highlight.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script>hljs.initHighlightingOnLoad();</script>
+    <title>Testing With Node by NickTulett</title>
+</head>
+
+<body>
+    <div id="container">
+        <div class="inner">
+
+            <header>
+                <h1>Tips and Tricks</h1>
+                <h2></h2>
+            </header>
+<!-- 
+            <section id="downloads" class="clearfix">
+                <a href="https://github.com/NickTulett/TestingWithNode/zipball/master" id="download-zip" class="button">
+                    <span>Download .zip</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode/tarball/master" id="download-tar-gz" class="button">
+                    <span>Download .tar.gz</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode" id="view-on-github" class="button">
+                    <span>View on GitHub</span>
+                </a>
+            </section>
+ -->
+            <hr>
+
+            <section id="main_content">
+                <h2>
+                    <a name="using-nodejs-a-an-automated-test-engine" class="anchor" href="#using-nodejs-a-an-automated-test-engine">
+                        <span class="octicon octicon-link"></span>
+                    </a>Random list of useful things</h2>
+                <h3>What development branch are we on?</h3>
+                <p>Example for Mercurial but could easily be adapted for git, svn, etc.</p>
+                <pre><code class="javascript">
+    require("execSync").exec("hg branch").stdout.replace(/\n|\r/g, "");                
+                </code></pre>
+
+                <h3>What machine are we running on?</h3>
+                <pre><code class="javascript">
+    require("os").hostname();                
+                </code></pre>
+
+                <h3>Maximise the browser window</h3>
+                <pre><code class="javascript">
+    driver.manage().window().maximize();                
+                </code></pre>
+
+                <h3>Compare numbers with tolerance</h3>
+                <p>Different answers between test runs are not always wrong, if you have a known tolerance for differences.</p>
+                <p>This extends the number prototype to compare numbers to within 1%:</p>
+                <pre><code class="javascript">
+    Number.prototype.roughly = function (comparedTo) {
+        if (this == comparedTo) {
+            return true;
+        }
+        var diff = ((Math.abs(comparedTo - this)) / this) || 1;
+        return (diff < 0.01);
+    };
+
+    assert(latestValue.roughly(expectedValue),
+        "Value mismatch in latest run!");
+                </code></pre>
+
+                <h3>Get User's home directory cross-OS</h3>
+                <pre><code class="javascript">
+    var HOME = (process.platform.match(/win32/) 
+        ? process.env["USERPROFILE"] 
+        : process.env["HOME"]).replace(/\\/g, "/");
+                </code></pre>
+
+                <h3>Run commands on a remote (linux) server</h3>
+                <p>You might need to control the web server to set up the test environment or poll a log to check server side progress or errors.</p>
+                <p>To avoid having to enter an ssh password every time, <a href="http://www.thegeekstuff.com/2008/11/3-steps-to-perform-ssh-login-without-password-using-ssh-keygen-ssh-copy-id/">set up an ssh key</a>.</p>
+                <pre><code class="javascript">
+    var sh = require("execSync");
+
+    function ssh(commands, user, stdout) {
+        console.log("STARTING SSH SESSION");
+        if (typeof user == "string") {
+            user = user || "tester";
+        } else {
+            stdout = user;
+            user = "tester";
+        }
+        if (typeof commands == "string") {
+            commands = [commands];
+        }
+        if (!stdout) {
+            return sh.run("ssh " + user + "@" + this.host + " \"" + commands.join("; ") 
+                + ";exit\"");
+        }
+        return sh.exec("ssh " + user + "@" + this.host + " \"" + commands.join("; ") 
+            + ";exit\"").stdout;
+    }
+
+    log.startCase("Check no invalid files are left in the upload folder");
+    assert(!ssh("ls /home/tomcat/ROOT/uploads", true).length,
+        "Bad files left in the upload folder");
+
+
+    function taillog(n, reverse) {
+        n = n || 10;
+        console.log("FETCHING LAST " + n + " LINES OF THE LOG");
+        var tailedLog = sh.exec("ssh tester@" + this.host + " \" tail -n " + n 
+            + " /var/log/tomcat7/AUT.log\"").stdout;
+        if (reverse) {
+            tailedLog = tailedLog.split(/\n/).reverse().join("\n");             
+        }           
+        //return the log as a String object augmented with a "top" method
+        //for getting the earliest (or latest if reversed) messages
+        tailedLog = new String(tailedLog);
+        tailedLog.top = function tailTop(lineCount) {
+            return this.split(/\n/).slice(0,lineCount).join();
+        }
+        return tailedLog;
+    }       
+
+    aggregationLog = taillog(5, true);
+    //last line could be blank, so check last 2 for completion message
+    while (!aggregationLog.top(2).match(/Long running server-side job complete/)) {
+        //do something else, such as check for errors in the other 3 lines
+    }
+
+
+    function MYSQL_dump() {
+        var dumpCMD = "mysqldump --user=testuser --max_allowed_packet=1G --host=" + host 
+        + " --port=3306 --default-character-set=utf8 \"testdb\" -ptestPassword > " 
+        +  "dumps/" + host.split(/\./)[0] + "_DBdump.sql";
+        return sh.exec(dumpCMD);
+    }
+                </code></pre>
+
+            </section>
+
+            <footer>
+                Testing With Node is maintained by <a href="https://github.com/NickTulett">NickTulett</a>
+                <br>This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+            </footer>
+
+
+        </div>
+    </div>
+</body>
+
+</html>
