@@ -84,6 +84,19 @@
         : process.env["HOME"]).replace(/\\/g, "/");
                 </code></pre>
 
+                <h3>Capture screenshots</h3>
+                <pre><code class="javascript">
+    //assuming HOME is the root for npm modules
+    var OutputType = require(HOME + "/node_modules/webdriver-sync/src/interfaces/OutputType.js");
+    
+    if (driver.getScreenshotAs) {
+        var screenshot = driver.getScreenshotAs(OutputType.BASE64);
+        fs.writeFileSync(HOME + "/screenshots/UniqueScreenshotName.png",
+            screenshot, "base64");
+    }
+                </code></pre>
+
+
                 <h3>Run commands on a remote (linux) server</h3>
                 <p>You might need to control the web server to set up the test environment or poll a log to check server side progress or errors.</p>
                 <p>To avoid having to enter an ssh password every time, <a href="http://www.thegeekstuff.com/2008/11/3-steps-to-perform-ssh-login-without-password-using-ssh-keygen-ssh-copy-id/">set up an ssh key</a>.</p>
