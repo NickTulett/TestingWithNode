@@ -45,20 +45,75 @@
                     <a name="using-nodejs-a-an-automated-test-engine" class="anchor" href="#using-nodejs-a-an-automated-test-engine">
                         <span class="octicon octicon-link"></span>
                     </a>Webpagetest</h2>
-                <p>Webpagetest is an online service that allows you to gather performance statistics for your websites. It can handle either single URLs or, with the use of rudimentary scripts, gather statistics for multiple operations and navigations.</p>
-                <p>Tests can be run against a variety of browsers in public locations around the world. You can also set up a private instance to keep testing internal. Latency and connection speeds can be mocked to make results more "realistic".</p>
+                <p><a href="http://www.webpagetest.org/about">Webpagetest</a> is an online service that allows you to gather <a href="https://sites.google.com/a/webpagetest.org/docs/using-webpagetest/metrics">performance metrics</a> for your websites. It can handle either <a href="http://www.webpagetest.org">single URLs</a> or, with the use of rudimentary <a href="">scripts</a>, gather matrics for multiple operations and navigations.</p>
+                <p>Tests can be run against a variety of browsers in public locations around the world. You can also set up a <a href="https://sites.google.com/a/webpagetest.org/docs/private-instances">private instance</a> to keep testing internal. <a href="http://chimera.labs.oreilly.com/books/1230000000545/ch01.html">Latency and connection speeds</a> can be mocked to make results more "realistic".</p>
+                <p>I'm going to assume that you know how webdriver's results are used to improve your site's performance and that you have a private instance running.</p>
+
+                <h3>A node.js client for webpagetest</h3>
+                <p>Marcel Duran has produced a <a hjref="https://github.com/marcelduran/webpagetest-api">node.js wrapper</a> for the webpagetest API. You can either run tests directly from the command line, or from within node.js programs/scripts.</p> 
+
+                <h3>Requiring webpagetest</h3>
+                <p>Install webpagetest with npm, then require it in your script and point it to your private instance:</p>
                 <pre><code class="javascript">
-    require("execSync").exec("hg branch").stdout.replace(/\n|\r/g, "");                
+    var WebPageTest = require('/usr/lib/node_modules/webpagetest');
+    var wpt = new WebPageTest('192.168.10.150');
                 </code></pre>
 
-
-
-                <h3>Run commands on a remote (linux) server</h3>
-                <p>You might need to control the web server to set up the test environment or poll a log to check server side progress or errors.</p>
-                <p>To avoid having to enter an ssh password every time, <a href="http://www.thegeekstuff.com/2008/11/3-steps-to-perform-ssh-login-without-password-using-ssh-keygen-ssh-copy-id/">set up an ssh key</a>.</p>
+                <h3>A webpagetest script</h3>
+                <p>Scripts are passed to the webpagetest object as an array of objects representing interactions with the website, e.g to log in and wait for a barchart to appear:</p>
                 <pre><code class="javascript">
+    var script = wpt.scriptToString([
+        {logData: 0},//don't gather metrics about the initial log in page
+        {setViewportSize: ["1750",  "850"]},
+        {navigate: testPage},
+        {setValue: ['id=username', 'tester@acme.com']},
+        {setValue: ['id=password', 'PASSWORD']},
 
+        {logData: 1},//gather metrics only after signing in
+        {setDOMElement: 'class=barchart'},
+        {clickAndWait: 'id=signIn'}
+    ]);
                 </code></pre>
+
+                <h3>Webpagetest settings</h3>
+                <p>You also pass in a settings object to tell webpagetest which location/browser to user, connection quality and other parameters which affect the types of results you get:</p>
+                <pre><code class="javascript">
+    var testSettings = {  
+        //setDOMRequest and setDOMElement will only work with IE10 and URL Blast
+        "location": "Local-IE10",
+        "firstViewOnly": false,
+        "pollResults": 5,
+        "timeout": 60,
+        "reporter": "xunit",
+        "notifyEmail": "tester@acme.com",
+        "video": true,
+        "connectivity": "custom",
+        "bandwidthDown": "5000",
+        "bandwidthUp": "512",
+        "latency": "150",
+        "packetLossRate": "5"
+    }
+                </code></pre>
+
+                <h3>Running tests and parsing results</h3>
+                <p>Call the <strong>runTest</strong> method with the script, settings and a callback to handle the results of the test (or any errors).</p>
+                <pre><code class="javascript">
+    wpt.runTest(
+        script
+        ,testSettings
+        ,function(err, data) {
+            var runData = data.response.data;
+            var results = runData.run.firstView.results;
+            //write out 4 interesting metrics to CSV
+            fs.writeFileSync(HOME + "/PerformanceTestResults.csv",
+                "TTFB,DocComplete,FullyLoaded,VisuallyComplete\n" +
+                 results.TTFB + "," + results.docTime + "," 
+                 + results.fullyLoaded + "," + results.visualComplete);
+        }
+    );
+                </code></pre>
+
+                <a href="jenkins.html">Next: Continuous integration with Jenkins</a>
 
             </section>
 
