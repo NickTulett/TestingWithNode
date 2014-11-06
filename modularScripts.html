@@ -301,6 +301,8 @@ module.exports = function (driverType) {
     
 }
                 </code></pre>
+                <p>The test-type argument we passed to Chrome above stops a security message appearing every time you run your tests and ruining any screenshots you might be taking. Peter Beverloo maintains a <a href="http://peter.sh/experiments/chromium-command-line-switches/#test-type">full list of Chrome command line options</a> for the curious</p>.
+                <p>Similarly, the preference to automatically download csv files is added to the FirefoxProfile. There around <a href="http://kb.mozillazine.org/About:config_entries">800 preferences</a> available - you may not need any of them.</p>
 
                 <h3>Running multiple tests</h3>
                 <p>We don't want to run the command line for every single test, but we can easily call multiple tests in a single script file:</p>
