@@ -132,6 +132,9 @@
         console.log("FETCHING LAST " + n + " LINES OF THE LOG");
         var tailedLog = sh.exec("ssh tester@" + this.host + " \" tail -n " + n 
             + " /var/log/tomcat7/AUT.log\"").stdout;
+        //if you are looking for specific messages by regex matching
+        //you might want to reverse the order so the last messages 
+        //appear first
         if (reverse) {
             tailedLog = tailedLog.split(/\n/).reverse().join("\n");             
         }           
