@@ -293,10 +293,10 @@ function WD_findElement(selector, index) {
                 driver.getMouse()._instance.contextClickSync(element._instance.getCoordinatesSync());
             };
 
-            //for single element, provide a dummy forEach method
+            //for single element, provide dummy forEach and map methods
             //so that higher-level scripts don't have to worry about
             //traversing a lists of one element
-            element.forEach = function only(fn) {
+            element.forEach = element.map = function only(fn) {
                 return fn(element);
             };
             element.length = 1;
