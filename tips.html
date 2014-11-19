@@ -84,7 +84,7 @@
         : process.env["HOME"]).replace(/\\/g, "/");
                 </code></pre>
 
-                <h3>Pull data from a text file one line at a time</h3>
+                <h3>Pull data from a text file in slices</h3>
                 <pre><code class="javascript">
     //in this example I want to fill a comments array
     //with the first 100 characters
@@ -99,7 +99,6 @@
         fs.readSync(commentsFile, buffer, 0, 100 * i, lastPosition);
         comment = buffer.toString().slice(0, 100*i);
         lastPosition += 100*i;
-        PTL.addComment(comment);
         comments.push(comment);
     }
     fs.closeSync(commentsFile);    
