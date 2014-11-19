@@ -186,7 +186,7 @@
 
                 <p>Let's put all that together (extending the above $by method for parent selection):</p>
                 <pre><code class="javascript">
-function WD_findElement(selector, index) {
+function WD_findElement(selector, root, index) {
 //will return multiple elements by default 
 //or a specific element if the index is provided
 //or a single element if only one is found
@@ -230,7 +230,11 @@ function WD_findElement(selector, index) {
     }
 
     var element;
-    
+    //could be in a chain, so start from specified root or driver if not
+    if (typeof root != "object") {
+         index = root;
+         root = driver;
+    }
     try {
         element = driver.findElements($by(selector));
     } catch (e) {
