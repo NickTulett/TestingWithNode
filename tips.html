@@ -84,6 +84,27 @@
         : process.env["HOME"]).replace(/\\/g, "/");
                 </code></pre>
 
+                <h3>Pull data from a text file one line at a time</h3>
+                <pre><code class="javascript">
+    //in this example I want to fill a comments array
+    //with the first 100 characters
+    //then the next 200
+    //then the next 300 and so on up to 1000 characters
+    var comments = [];
+    var comment;
+    var buffer = new Buffer(1024);
+    var lastPosition = 0;
+    var commentsFile = fs.openSync(testing.TEST_HOME + "Comments/Aeneidos.txt", "r");
+    for (var i = 1; i <= 10; i++) {
+        fs.readSync(commentsFile, buffer, 0, 100 * i, lastPosition);
+        comment = buffer.toString().slice(0, 100*i);
+        lastPosition += 100*i;
+        PTL.addComment(comment);
+        comments.push(comment);
+    }
+    fs.closeSync(commentsFile);    
+                </code></pre>
+
                 <h3>Capture screenshots</h3>
                 <pre><code class="javascript">
     //assuming HOME is the root for npm modules
