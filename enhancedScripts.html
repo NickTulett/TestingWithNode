@@ -270,8 +270,12 @@ function WD_findElement(selector, root, index) {
 
             //these use standard webdriver WebElement methods
             element.set = function setValue(newValue) {
+                //assume you will want to clear the old value first
+                if ((element.getAttribute("type") !== "file") && (element.getAttribute("nodeName") !== "SELECT")) {
+                    element.clear();
+                }
                 return element.sendKeys(newValue);
-            };
+            }
             element.isChecked = function () {
                 return element.getAttribute("checked") === true;
             };
