@@ -84,6 +84,14 @@
         : process.env["HOME"]).replace(/\\/g, "/");
                 </code></pre>
 
+                <h3>Select elements only if visible</h3>
+                <p>Using XPath you can select visible elements or elements that are inside a visible container.</p>
+                <p>e.g. a locator for specific class of icon in a modal dialog that can have one of a choice of divs showing</p>
+                <pre><code class="javascript">
+    //div[contains(@class, 'modal') and contains(@style, 'display: block')]
+        //i[contains(@class,'fa-bar-chart')]
+                </code></pre>
+
                 <h3>Pull data from a text file in slices</h3>
                 <pre><code class="javascript">
     //in this example I want to fill a comments array
