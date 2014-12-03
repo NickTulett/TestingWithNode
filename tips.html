@@ -190,6 +190,25 @@
     }
                 </code></pre>
 
+                <h3>Compare an uploaded image to the original file</h3>
+                <p>Using the sh function from above to run wget locally to download the image as a file</p>
+                <p>Compare the downloaded file to the original that was uploaded earlier</p>
+                <pre><code class="javascript">
+    function verifyImageUpload(img, original) {
+        var imgSrc = $(img).getAttribute("src");
+        // wget needs session cookie for authentication
+        var cookie = browser.manage().getCookies().toString().split(/;/)[0].split(/=/);
+        sh.run("wget -O " + testing.TEST_HOME + "topology/layout.png " 
+            + "--no-cookies --header \"Cookie: " + cookie[0] + "=" + cookie[1] + "\""
+            + " " + imgSrc);
+        var original64 = fs.readFileSync(original).toString("base64");
+        var download64 = fs.readFileSync(testing.TEST_HOME + "topology/layout.png").toString("base64");
+        //delete the download to keep the folder clean
+        fs.unlinkSync(testing.TEST_HOME + "topology/layout.png");
+        return (original64 == download64);
+    }
+                </code></pre>
+
                 <h3>Useful Sublime Text plugins</h3>
                 <ul>
                 <li><a href="https://sublime.wbond.net/">Package Control</a> - look for all the others here</li>
