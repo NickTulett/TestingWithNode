@@ -191,8 +191,14 @@
                 </code></pre>
 
                 <h3>Compare an uploaded image to the original file</h3>
-                <p>Using the sh function from above to run wget locally to download the image as a file</p>
-                <p>Compare the downloaded file to the original that was uploaded earlier</p>
+                <p>Using the sh function from above to run wget locally to download the image as a file.</p>
+                <p>Compare the downloaded file to the original that was uploaded earlier.</p>
+                <p>This is a good example of using the correct tool for the job:</p>
+                <ul>
+                <li>Webdriver to get the image properties and manage cookies.</li>
+                <li>wget to grab a file from the remote server.</li>
+                <li>node.js to handle the file locally.</li>
+                </ul>
                 <pre><code class="javascript">
     function verifyImageUpload(img, original) {
         var imgSrc = $(img).getAttribute("src");
