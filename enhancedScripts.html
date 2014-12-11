@@ -295,8 +295,13 @@ function WD_findElement(selector, root, index) {
 
             //the Mouse class is not fully realised in webdriver-sync yet, 
             //so hover and rClick look a bit clumsy
-            element.hover = function hover() {
-                driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync());
+            element.hover = function hover(x, y) {
+            //will take x and y parameters, otherwise it just hovers over the middle of the element
+                if (arguments.length) {
+                    driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync(), x, y);    
+                } else {
+                    driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync());
+                }                           
             };
             element.rClick = function rClick() {
                 driver.getMouse()._instance.contextClickSync(element._instance.getCoordinatesSync());
