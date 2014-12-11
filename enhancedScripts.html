@@ -298,13 +298,16 @@ function WD_findElement(selector, root, index) {
             element.hover = function hover(x, y) {
             //will take x and y parameters, otherwise it just hovers over the middle of the element
                 if (arguments.length) {
-                    driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync(), x, y);    
+                    driver.getMouse()._instance.mouseMoveSync(
+                        element._instance.getCoordinatesSync(), x, y);    
                 } else {
-                    driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync());
+                    driver.getMouse()._instance.mouseMoveSync(
+                        element._instance.getCoordinatesSync());
                 }                           
             };
             element.rClick = function rClick() {
-                driver.getMouse()._instance.contextClickSync(element._instance.getCoordinatesSync());
+                driver.getMouse()._instance.contextClickSync(
+                    element._instance.getCoordinatesSync());
             };
 
             //for single element, provide dummy forEach and map methods
