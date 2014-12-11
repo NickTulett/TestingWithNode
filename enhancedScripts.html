@@ -299,7 +299,8 @@ function WD_findElement(selector, root, index) {
             //will take x and y parameters, otherwise it just hovers over the middle of the element
                 if (arguments.length) {
                     driver.getMouse()._instance.mouseMoveSync(
-                        element._instance.getCoordinatesSync(), x, y);    
+                    //ensure x and y are floored to integers
+                        element._instance.getCoordinatesSync(), ~~x, ~~y);    
                 } else {
                     driver.getMouse()._instance.mouseMoveSync(
                         element._instance.getCoordinatesSync());
