@@ -90,6 +90,34 @@
     var driver = new wd["FirefoxDriver"](profile);                
                 </code></pre>
 
+                <h2>But what if there is no download button?</h2>
+                <p>Say you have a website that allows you to upload images. How can you check that the image you see on the site is the same one you uploaded?</p>
+                <h3>Compare an uploaded image to the original file</h3>
+                <p>Using the <a href="tips.html#sh">sh function</a> to run wget locally to download the image as a file.</p>
+                <p>Compare the downloaded file to the original that was uploaded earlier.</p>
+                <p>This is a good example of using the correct tool for the job:</p>
+                <ul>
+                <li>Webdriver to get the image properties and manage cookies.</li>
+                <li>wget to grab a file from the remote server.</li>
+                <li>node.js to handle the file locally.</li>
+                </ul>
+                <pre><code class="javascript">
+    function verifyImageUpload(img, original) {
+        var imgSrc = $(img).getAttribute("src");
+        // wget needs session cookie for authentication
+        var cookie = browser.manage().getCookies().toString().split(/;/)[0].split(/=/);
+        sh.run("wget -O " + testing.TEST_HOME + "topology/layout.png " 
+            + "--no-cookies --header \"Cookie: " + cookie[0] + "=" + cookie[1] + "\""
+            + " " + imgSrc);
+        var original64 = fs.readFileSync(original).toString("base64");
+        var download64 = fs.readFileSync(testing.TEST_HOME + "topology/layout.png").toString("base64");
+        //delete the download to keep the folder clean
+        fs.unlinkSync(testing.TEST_HOME + "topology/layout.png");
+        return (original64 == download64);
+    }
+                </code></pre>
+
+
                 <a href="browserLogs.html">Next: Browser Logs</a>
 
 

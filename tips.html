@@ -125,7 +125,7 @@
                 </code></pre>
 
 
-                <h3>Run commands on a remote (linux) server</h3>
+                <h3 id="sh">Run commands on a remote (linux) server</h3>
                 <p>You might need to control the web server to set up the test environment or poll a log to check server side progress or errors.</p>
                 <p>To avoid having to enter an ssh password every time, <a href="http://www.thegeekstuff.com/2008/11/3-steps-to-perform-ssh-login-without-password-using-ssh-keygen-ssh-copy-id/">set up an ssh key</a>.</p>
                 <pre><code class="javascript">
@@ -187,31 +187,6 @@
         + " --port=3306 --default-character-set=utf8 \"testdb\" -ptestPassword > " 
         +  "dumps/" + host.split(/\./)[0] + "_DBdump.sql";
         return sh.exec(dumpCMD);
-    }
-                </code></pre>
-
-                <h3>Compare an uploaded image to the original file</h3>
-                <p>Using the sh function from above to run wget locally to download the image as a file.</p>
-                <p>Compare the downloaded file to the original that was uploaded earlier.</p>
-                <p>This is a good example of using the correct tool for the job:</p>
-                <ul>
-                <li>Webdriver to get the image properties and manage cookies.</li>
-                <li>wget to grab a file from the remote server.</li>
-                <li>node.js to handle the file locally.</li>
-                </ul>
-                <pre><code class="javascript">
-    function verifyImageUpload(img, original) {
-        var imgSrc = $(img).getAttribute("src");
-        // wget needs session cookie for authentication
-        var cookie = browser.manage().getCookies().toString().split(/;/)[0].split(/=/);
-        sh.run("wget -O " + testing.TEST_HOME + "topology/layout.png " 
-            + "--no-cookies --header \"Cookie: " + cookie[0] + "=" + cookie[1] + "\""
-            + " " + imgSrc);
-        var original64 = fs.readFileSync(original).toString("base64");
-        var download64 = fs.readFileSync(testing.TEST_HOME + "topology/layout.png").toString("base64");
-        //delete the download to keep the folder clean
-        fs.unlinkSync(testing.TEST_HOME + "topology/layout.png");
-        return (original64 == download64);
     }
                 </code></pre>
 
