@@ -82,6 +82,7 @@
 
     //then do something with the file
                 </code></pre>
+                <h2>Firefox download confirmation</h2>
                 <p>By default, Firefox will annoyingly ask you to confirm the download location. You can suppress this behaviour when you instantiate the browser:</p>
                 <pre><code class="javascript">
     var wd = require("webdriver-sync");
@@ -90,17 +91,21 @@
     var driver = new wd["FirefoxDriver"](profile);                
                 </code></pre>
 
-                <h2>Internet Explorer</h2>
-                <p>This browser will popup an out of process dialog every time you try to download something, so clicking on a link will freeze webfriver as it waits for the download to complete.</p>
+                <h3>Internet Explorer download confirmation</h3>
+                <p>This browser will pop up an out of process dialog every time you try to download something, so clicking on a link will freeze webdriver as it waits for the download to complete.</p>
                 <p>This annoyance can be circumvented by using keypresses to activate and confirm the download. Webdriver can handle a key press on an element, but we need another npm module, <a href="https://www.npmjs.com/package/node_keyboard">node_keyboard</a> to send key presses to the download security theatre dialog.</p>
                 <pre><code class="javascript">
-    var KB          = require("node_keyboard");
+    var KB = require("node_keyboard");
+
+    //these keypresses are handled by webdriver
     $("a").sendKeys(PTL.WD.Keys.ENTER);
     //sometimes the system gets confused and uses the Alt-S keyboard shortcut to open the start menu
     //so tap the link again to maintain focus
     Delay(1e3);
     $("a").sendKeys(PTL.WD.Keys.ENTER);
+    
     Delay(5e3);
+    //node_keyboard handles the download bar
     KB.press(KB.Key_Alt_L);
     KB.type(KB.Key_S);
     KB.release(KB.Key_Alt_L);
