@@ -102,8 +102,8 @@
         script
         ,testSettings
         ,function(err, data) {
-            var runData = data.response.data;
-            var results = runData.run.firstView.results;
+            var runData = data.data;
+            var results = runData.runs["1"].firstView;
             //write out 4 interesting metrics to CSV
             fs.writeFileSync(HOME + "/PerformanceTestResults.csv",
                 "TTFB,DocComplete,FullyLoaded,VisuallyComplete\n" +
