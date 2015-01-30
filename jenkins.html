@@ -53,7 +53,7 @@ cd ../../../Testing
 hg pull
 hg update -C "$hgbranch"
 hg pull -u --force
-node Portal/scripts/ptl.js Chrome "$JOB_NAME" $portal_build_number $archive_build_number
+node Portal/scripts/ptl.js Chrome "$JOB_NAME" $param1 $param2 $etc
 </code></pre>                
                 <p>There needs to be a function in the test scripts that matched the Jenkins job name (if you want to use the $JOB_NAME variable).</p>
 
