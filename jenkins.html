@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/highlight.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script>hljs.initHighlightingOnLoad();</script>
+    <title>Testing With Node by NickTulett</title>
+</head>
+
+<body>
+    <div id="container">
+        <div class="inner">
+
+            <header>
+                <h1>Continuous Integration with Jenkins</h1>
+                <h2></h2>
+            </header>
+<!-- 
+            <section id="downloads" class="clearfix">
+                <a href="https://github.com/NickTulett/TestingWithNode/zipball/master" id="download-zip" class="button">
+                    <span>Download .zip</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode/tarball/master" id="download-tar-gz" class="button">
+                    <span>Download .tar.gz</span>
+                </a>
+                <a href="https://github.com/NickTulett/TestingWithNode" id="view-on-github" class="button">
+                    <span>View on GitHub</span>
+                </a>
+            </section>
+ -->
+            <hr>
+
+            <section id="main_content">
+                <h2>
+                    <a name="using-nodejs-a-an-automated-test-engine" class="anchor" href="#using-nodejs-a-an-automated-test-engine">
+                        <span class="octicon octicon-link"></span>
+                    </a>Running webdriver-sync tests from Jenkins</h2>
+                <p>Simply create a new job and add a build task using a shell command for linux slaves or a windows batch command.</p>
+                <p>You can kill any running browsers and update from source control before running the job</p>
+<pre><code class="bash">
+killall chrome || true
+cd ../../../Testing
+hg pull
+hg update -C "$hgbranch"
+hg pull -u --force
+node Portal/scripts/ptl.js Chrome "$JOB_NAME" $portal_build_number $archive_build_number
+</code></pre>                
+                <p>There needs to be a function in the test scripts that matched the Jenkins job name (if you want to use the $JOB_NAME variable).</p>
+
+                <h2>Returning test results to Jenkins</h2>
+                <p>Jenkins can understand JUnit format test results and we can fake these with XML.</p>
+                <p>I have a log object that handles writing out results to Jenkin's console log and creating a JUnit-compatible test results file containing error counts and individual test timings.</p>
+<pre><code class="javascript">
+var fs = require("fs");
+var xml = require("xml");
+
+    log: {
+        testTag: null,
+        caseTag: null,
+        caseCount: 0,
+        testErrors: 0,
+        testName: "",
+        testTime: 0,
+        startTest: function log_startTest(testName) {
+            console.log("TEST STARTING: " + testName);
+            console.log(new Date());
+            var workspace = HOME + "/Jenkins/workspace/" + testName + "/";
+            if (!fs.existsSync(workspace)) {
+                fs.mkdirSync(workspace);
+            }
+            try {
+                fs.unlinkSync(workspace + "/*.png");
+            } catch (e) {
+            }
+            this.testName = testName;
+            this.testTag = [{"testsuite": [ { _attr: {"time": 1, "errors": 0, "name": testName}}]}];
+            this.caseCount = 0;
+            this.testTime = 0;
+        },
+        caseOpen: false,
+        caseErrors: 0,
+        caseName: "",
+        caseTime: 0,
+        startCase: function log_startCase(caseName) {
+            if (this.caseOpen) {
+                this.endCase();
+            }
+            this.caseErrors = 0;
+            this.caseCount++;
+            this.caseName = (this.caseCount < 10 ? "00" : this.caseCount < 100 ? "0" : "") 
+                + this.caseCount + " " + caseName;
+            this.caseTag = {"testcase": [ { _attr: {
+                "errors": 0, 
+                "name": this.caseName, 
+                "time": 1}} ]};
+            console.log("");
+            console.log("TEST: " + caseName);
+            this.caseOpen = true;
+            this.caseTime = Date.now();
+            console.log(new Date());
+        },
+        error: function log_error(errorText, screenshot) {
+            this.caseErrors++;
+            this.testErrors++;
+            console.log("\n[ERROR] " + errorText + "\n");
+            this.caseTag.testcase.push({"failure": [ { _attr: {"type": "Error"}}, errorText]});
+            if (screenshot) {
+                fs.writeFileSync(HOME + "/Jenkins/workspace/" + this.testName 
+                    + "/[" + this.caseName.replace(/(\\|\/)/g, "#") + "] "
+                    + ".png",
+                    screenshot, "base64");
+            }
+        },
+        endCase: function log_EndCase() {
+            this.caseTime = (Date.now() - this.caseTime) / 1e3;
+            console.log("TEST ENDED\n\n");
+            this.caseTag.testcase[0]["_attr"].errors = this.caseErrors.toString();
+            this.caseTag.testcase[0]["_attr"].time = this.caseTime.toString();
+            if (!this.caseErrors) {
+                this.caseTag.testcase.push("SUCCESS");
+            }
+            this.testTag[0].testsuite.push(this.caseTag);
+            this.caseOpen = false;
+            this.testTime += this.caseTime;
+        },
+        endTest: function log_endTest() {
+            if (this.caseOpen) {
+                this.endCase();
+            }
+            this.testTag[0].testsuite[0]["_attr"].errors = this.testErrors.toString();
+            this.testTime = this.testTime.toFixed(0);
+            this.testTag[0].testsuite[0]["_attr"].time = this.testTime.toString();
+            console.log("");
+            console.log("TESTS COMPLETE");
+            console.log(new Date());
+            console.log("Tests run: " + this.caseCount + ", Failures: " + this.testErrors);
+            console.log("Testing time: " + this.testTime);
+            if (require("os").hostname() !== "test-Latitude-E6500") {
+                fs.writeFileSync(HOME + "/Jenkins/workspace/" + this.testName + "/log.xml", 
+                    xml(this.testTag, {"declaration": {"encoding": "UTF-8"}}));
+                console.log("Results saved to " + HOME + "/Jenkins/workspace/" + this.testName + "/log.xml");
+            }
+        },
+        perfResult: function log_perfResult(load, metric, median, max) {
+            median = (+median).toFixed(3);
+            max = (+max).toFixed(3);
+            fs.writeFileSync(HOME + "/Jenkins/workspace/" + this.testName + "/" + 
+                load + "_" + metric + ".csv", //.properties", 
+                "Max " + load + ",Median " + load + "\n" + max + "," + median);
+        }
+    },
+</code></pre>
+                <p>At the end of the test, there will be a log.xml file in the Jenkins job's workspace, so we just need to tell Jenkins to publish it as the Junit test result reports in the post-build actions.</p>
+           
+                
+                <a href="tips.html">Next: Tips and tricks</a>
+
+
+            </section>
+
+            <footer>
+                <a href="/TestingWithNode/">Testing With Node</a> is maintained by <a href="https://github.com/NickTulett">NickTulett</a>
+                <br>This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+            </footer>
+
+
+        </div>
+    </div>
+</body>
+
+</html>
