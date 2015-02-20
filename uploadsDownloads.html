@@ -138,8 +138,44 @@
         return (original64 == download64);
     }
                 </code></pre>
+                    <h2>Zipped downloads</h2>
+                    <p>Sometimes you are not downloading single files but .zip (or equivalent) archives.</p>
+                    <p>The <a href='https://www.npmjs.com/package/adm-zip'>adm-zip</a> npm module will allow you to interrogate individual files in the archive.</p>
+                    <p>You can check the integrity of the archive by checking the file names, sizes, CRC values, etc. of a known good archive and using these as a basis for comparison.</p>
+                    <p>Then your test could do something like this:</p>
+                    <pre><code class="javascript">
 
+    var AdmZip = require("adm-zip");
 
+    function checkDownloadedZip(expectedCRCs) {
+        files.wipeFolder(testing.DOWNLOADS, /\.zip$/);
+        $("'Download'").click();
+        Delay(25e3);//or run a specific loop to check the download is complete
+        var unzippedModel = new AdmZip(testing.DOWNLOADS + "Downloaded.zip");
+        var zipContents = unzippedModel.getEntries();
+        zipContents.forEach(function (zipFile, i) {
+            var expectedCRC = expectedCRCs[i];
+            console.log("CHECKING " + expectedCRC.name);
+            assert(expectedCRC.name === zipFile.entryName,
+                "File is missing from the downloaded zip");
+            assert(zipFile.header.size, 
+                "file is empty when the zip is downloaded");
+            assert(zipFile.header.crc === expectedCRC.crc,
+                "CRC mismatch " + zipFile.header.crc);
+        });
+        
+    }
+    checkDownloadedZip(
+        [
+            {"name": "input.xml", "crc": 1325479318},
+            {"name": "smLoad.csv", "crc": 197218698},
+            {"name": "smDraw.csv", "crc": 1454915604},
+            {"name": "utilityPower.csv", "crc": 2137376351},
+            {"name": "weather.csv", "crc": 3328012098}
+        ]
+    );
+                </code></pre>
+                
                 <a href="browserLogs.html">Next: Browser Logs</a>
 
 
