@@ -83,19 +83,42 @@
     // By id
     var silicon = driver.findElement(By.cssSelector("#element14"));
                 </code></pre>
-                
+                <p>It also covers us for <a href="http://css-tricks.com/child-and-sibling-selectors/">child and sibling selectors</a></p>
+                <pre><code class="javascript">
+    // div followed by a span child element
+    driver.findElement(By.cssSelector("div span"));
+
+    //div with immediate anchor child
+    driver.findElement(By.cssSelector("div>a"));
+
+    //div with adjacent legend
+    driver.findElement(By.cssSelector("div+legend"));
+                </code></pre>
+
+                <h3>Selectors for AngularJS elements</h3>
+                <p>Angular relies heavily on custom elements. CSS selectors and <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes">pseudo classes</a> have these covered too:</p>
+                <pre><code class="javascript">
+    // angular button with ng-click event
+    driver.findElement(By.cssSelector("button[ng-click='openFileUploadDialog()']"));
+
+    // angular button in 3rd table row built by ng-repeat
+    driver.findElement(By.cssSelector("tr[ng-repeat='variation in model.variations']:nth-child(2) button[ng-click='checkReRunModel(variation)']"));
+                </code></pre>
+
                 <h3>Text content and Xpath selectors</h3>
                 <p>I haven't found linkText to be useful and just use partialLinkText for links. Obviously this depends on how uniquely your links are worded.</p>
                 <p>Generalising the text selectors for any element means relying on Xpath:</p>
                 <pre><code class="javascript">
     // By exact text content
-    var abortButton = driver.findElement(
-        By.xpath("//*[text()='Abort!']"));
+    var abortButton = driver.findElement(By.xpath("//*[text()='Abort!']"));
     
     // By contains text
-    var allTheThings = driver.findElements(
-        By.xpath("//*[contains(text(),'Thing')]"));
+    var allTheThings = driver.findElements(By.xpath("//*[contains(text(),'Thing')]"));
+
+    // parent element
+    driver.findElements(By.xpath(".."))
                 </code></pre>
+                <p>Xpath selectors offer a flexible interface to navigate the DOM, but at a price in performance. Where possible, try to identify the equivalent CSS selector first as this will offer a 5-10x speed increase over Xpath. For text and parent selectors, Xpath is currently the only option.</p>
         
                 <h3>Better selectors</h3>
                 <p>So far all we've done is remove some of the redundant selector types and generalise the text ones. The syntax still isn't exactly concise.</p>
@@ -130,6 +153,8 @@
                 </code></pre>
 
                 <p>OK so that's concise and consistent and reasonably easy to follow, so how is it done?
+                <!-- Will need to replace the text selectors and advise against using xpath -->
+                <!-- and check the xpath chaining -->
                 <pre><code class="javascript">
     function $by(selector) {
         //first character indicates the selection type
