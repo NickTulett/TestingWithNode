@@ -143,13 +143,13 @@
     // By contains text
     var allTheThings = $("*Thing*");
     
-    // By explicit Xpath
-    var bestOption = 
-        $("//option[@value='best']");
+    // By parent element
+    var listContainer = 
+        $("ul.containedList").$("parent");
 
-    // By attribute
-    var uploads = 
-        $("@ng-repeat='file in uploadedFiles'");
+    // By partial attribute
+    var visibleCalendar = 
+        $("ul[ng-change='dateSelection()'][style*='display: block']");
                 </code></pre>
 
                 <p>OK so that's concise and consistent and reasonably easy to follow, so how is it done?
