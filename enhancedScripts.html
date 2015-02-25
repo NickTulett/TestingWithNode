@@ -222,37 +222,43 @@ function WD_findElement(selector, root, index) {
 
     function $by(selector) {
     //parse short selectors
+        root = root || driver;
         var by = selector.slice(0,1);
-        if (by.match(/(\.|#|\w)/)) {
+        if (by.match(/(\.|#|\w|\[)/)) {
             by = "cssSelector";
         }
         if (by === "^") {
             by = "partialLinkText";
             selector = selector.slice(1);
         }
+        if (by === "<") {
+            by = "tagName";
+            selector = selector.slice(1, -1);
+        }
         if (by === "*") {
             by = "xpath";
-            selector = "//*[contains(text(),'" 
-            + selector.slice(1, -1) + "')]";
+            selector = "//*[contains(text(),'" + selector.slice(1, -1) + "')]";
         }
         if (by === "'") {
-                by = "xpath";
-                selector = "//*[text()=" + selector + "]";
+            by = "xpath";
+            selector = "//*[text()=" + selector + "]";
         }
         if (by === "@") {
-                by = "xpath";
-                selector = "//*[" + selector + "]";
+            by = "xpath";
+            selector = "//*[" + selector + "]";
         }
         if (selector.slice(0,2) === "//") {
             by = "xpath";
+            if (root != driver) {//sub-element needs to search from current element not doc root
+                selector = "." + selector;
+            }
         }       
         if (selector === "parent") {
             by = "xpath";
             selector = "..";
         }
         console.log("LOCATING ELEMENT " + selector + " BY " + by);
-        return By[by](selector);            
-    }
+        return By[by](selector);                }
 
     var element;
     //could be in a chain, so start from specified root or driver if not
