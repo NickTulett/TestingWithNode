@@ -212,16 +212,12 @@
                 <p>Let's put all that together (extending the above $by method for parent selection):</p>
                 <pre><code class="javascript">
 function WD_findElement(selector, root, index) {
-//will return multiple elements by default 
-//or a specific element if the index is provided
-//or a single element if only one is found
-    
     if (!selector) {
+        console.error("NO SELECTOR SPECIFIED FOR $()");
         return null;
     }
-
+    //replace the verbose By syntax with sizzle-like succint selectors
     function $by(selector) {
-    //parse short selectors
         root = root || driver;
         var by = selector.slice(0,1);
         if (by.match(/(\.|#|\w|\[)/)) {
@@ -231,18 +227,17 @@ function WD_findElement(selector, root, index) {
             by = "partialLinkText";
             selector = selector.slice(1);
         }
-        if (by === "<") {
-            by = "tagName";
-            selector = selector.slice(1, -1);
-        }
+        //wildcard text content selector
         if (by === "*") {
             by = "xpath";
             selector = "//*[contains(text(),'" + selector.slice(1, -1) + "')]";
         }
+        //literal text content selector
         if (by === "'") {
             by = "xpath";
             selector = "//*[text()=" + selector + "]";
         }
+
         if (by === "@") {
             by = "xpath";
             selector = "//*[" + selector + "]";
@@ -258,107 +253,94 @@ function WD_findElement(selector, root, index) {
             selector = "..";
         }
         console.log("LOCATING ELEMENT " + selector + " BY " + by);
-        return By[by](selector);                }
+        return By[by](selector);            
+    }
+    //ultimately findElement returns a WebElement or array of WebElements
+    //here we add some extra methods and properties useful for testing
+    function augmentedElement(element, elementIndex) {
+        element.selector = selector;
+        if (element.length) {
+            element = element[elementIndex || 0];
+        }
+        // element.text = element.getText();
+        element["$"] = function subElement(sel, subindex) {
+            return WD_findElement(sel, element, subindex);
+        };
+        element.scrollTo = function scrollTo() {
+            driver.executeScript("arguments[0].scrollIntoView(true)", element._instance);
+        };
+        element.set = function setValue(newValue) {
+            console.log("SETTING VALUE " + (selector.match(/password/) ? "********" : ("" + newValue)));
+            if ((element.getAttribute("type") !== "file") && (element.getAttribute("nodeName") !== "SELECT")) {
+                element.clear();
+            }
+            return element.sendKeys(newValue);
+        };
+        element.trigger = function trigger(action) {
+            driver.executeScript("$(arguments[0]).trigger('" + action + "')", element._instance);   
+        };
+        element.dropdown = function dropdown() {
+            driver.executeScript("$(arguments[0]).next().show()", element._instance);   
+        };
+        element.setAttribute = function dropdown(attr, value) {
+            driver.executeScript("$(arguments[0]).attr('" + attr + "', '" + value + "')", element._instance);   
+        };
+        element.hover = function hover(x, y) {
+            if (arguments.length) {
+                driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync(), ~~x, ~~y);    
+            } else {
+                driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync());
+            }                           
+        };
+        element.coordinates = function coordinates () {//returns the on-page coordinates as a simple JSON object, e.g. {"y": 345, "x": 1237}
+            return element._instance.getCoordinatesSync().onPageSync();
+        };
+        element.rClick = function rClick() {
+            driver.getMouse()._instance.contextClickSync(element._instance.getCoordinatesSync());
+        };
+        element.clickAt = function clickAt(xOffset, yOffset) {
+            var elementCoordinates = element.coordinates();
+            browser.getMouse()._instance.clickSync({y: elementCoordinates.y + yOffset, x: elementCoordinates.x + xOffset});
+        };
+        element.isChecked = function () {
+            return element.getAttribute("checked") === true;
+        };
+        element.forEach = element.map = function only(fn) {
+            return fn(element, 0);
+        };
 
+        element.length = 1;             
+        return element;
+    }
     var element;
-    //could be in a chain, so start from specified root or driver if not
     if (typeof root != "object") {
          index = root;
          root = driver;
     }
+    var indexSet = (typeof index === "number");
+    var firstElement = indexSet && (index === 0);
     try {
-        element = driver.findElements($by(selector));
+        element = firstElement ? [root.findElement($by(selector))] : root.findElements($by(selector));
     } catch (e) {
-    //return an object with length zero if anything failed
         return {
             length: 0
         };
     }
-
-    //return specific element if index is provided
-    var indexSet = (typeof index === "number");
     var elementIndex = index || 0;
     if (element) {
         if ((!element.length) || (indexSet && indexSet > element.length)) {
-            //element is not there or index is too high
             element.isDisplayed = function elementNotPresent() {
                 return false;
             };
+            element.getText = function elementNotPresentText() {
+                return "";
+            };
             return element;
         }
-
         if ((element.length === 1) || indexSet) {
-            //return a single element
-            //augmented with useful methods
-            
-            element.selector = selector;
-            element = element[elementIndex];
-
-            //allow the selector to be chained to select child elements
-            element["$"] = function subElement(sel, subindex) {
-                return WD_findElement(sel, element, subindex);
-            };
-
-            //these use standard webdriver WebElement methods
-            element.set = function setValue(newValue) {
-                //assume you will want to clear the old value first
-                if ((element.getAttribute("type") !== "file") 
-                    && (element.getAttribute("nodeName") !== "SELECT")) {
-                    element.clear();
-                }
-                return element.sendKeys(newValue);
-            }
-            element.isChecked = function () {
-                return element.getAttribute("checked") === true;
-            };
-            
-            //scrollTo, trigger and dropdown interact with the element 
-            //by using javascript within the browser itself
-            element.scrollTo = function scrollTo() {
-                driver.executeScript("arguments[0].scrollIntoView(true)", element._instance);
-            };
-            element.trigger = function trigger(action) {
-                driver.executeScript("$(arguments[0]).trigger('" + action + "')", element._instance);   
-            };
-            element.dropdown = function dropdown() {
-                driver.executeScript("$(arguments[0]).next().show()", element._instance);   
-            };
-
-            //the Mouse class is not fully realised in webdriver-sync yet, 
-            //so hover and rClick look a bit clumsy
-            element.hover = function hover(x, y) {
-            //will take x and y parameters, otherwise it just hovers over the middle of the element
-                if (arguments.length) {
-                    driver.getMouse()._instance.mouseMoveSync(
-                    //ensure x and y are floored to integers
-                        element._instance.getCoordinatesSync(), ~~x, ~~y);    
-                } else {
-                    driver.getMouse()._instance.mouseMoveSync(
-                        element._instance.getCoordinatesSync());
-                }                           
-            };
-            element.rClick = function rClick() {
-                driver.getMouse()._instance.contextClickSync(
-                    element._instance.getCoordinatesSync());
-            };
-
-            //for single element, provide dummy forEach and map methods
-            //so that higher-level scripts don't have to worry about
-            //traversing a lists of one element
-            element.forEach = element.map = function only(fn) {
-                return fn(element);
-            };
-            element.length = 1;
-            
+            return augmentedElement(element, elementIndex);
         } else {
-            //return an array of augmented elements
-            //with a map method that can chain down to child elements
-            return element.map(function (_element) {
-                _element["$"] = function subElement(sel, subindex) {
-                    return WD_findElement(sel, _element, subindex);
-                };
-                return _element;
-            });
+            return element.map(augmentedElement);
         } 
     } else {
         console.error(selector + " not found");
