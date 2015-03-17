@@ -203,9 +203,12 @@
                 <pre><code class="javascript">
 var used = 0; 
 var count = 0;
-var fontSizes = {};
-var fontFamilys = {};
-var colors = {};
+var tallies = {
+    "fontSize": {},
+    "fontFamily": {},
+    "color": {},
+    "backgroundColor": {}
+};
 
 [].forEach.call(document.styleSheets, function (styleSheet) {
     [].forEach.call(styleSheet.rules, function (rule) {
@@ -215,23 +218,13 @@ var colors = {};
                 if (selector && !selector.match(/:/) 
                     && document.querySelectorAll(selector).length) {
                     used++;
-                    if (rule.style.fontSize) {
-                        console.log(rule.selectorText + " " + rule.style.fontSize)
-                        fontSizes[rule.style.fontSize] = 
-                            fontSizes[rule.style.fontSize] || 0;
-                        fontSizes[rule.style.fontSize]++;
-                    }
-                    if (rule.style.fontFamily) {
-                        console.log(rule.selectorText + " " + rule.style.fontFamily)
-                        fontFamilys[rule.style.fontFamily] = 
-                            fontFamilys[rule.style.fontFamily] || 0;
-                        fontFamilys[rule.style.fontFamily]++;
-                    }
-                    if (rule.style.color) {
-                        console.log(rule.selectorText + " " + rule.style.color)
-                        colors[rule.style.color] = 
-                            colors[rule.style.color] || 0;
-                        colors[rule.style.color]++;
+                    for (var tally in tallies) {
+                        if (rule.style[tally]) {
+                            console.log(rule.selectorText + " " + rule.style.fontSize)
+                            tallies[tally][rule.style[tally]] = 
+                                tallies[tally][rule.style[tally]] || [];
+                            tallies[tally][rule.style[tally]].push(rule.selectorText);
+                        }
                     }
                 }
             }
@@ -241,9 +234,7 @@ var colors = {};
 console.log(count);
 console.log(used);
 console.log(Math.floor(100*used/count) + "%");
-console.dir(fontSizes);
-console.dir(fontFamilys);
-console.dir(colors);
+console.dir(tallies, 2);
                 </code></pre>                
 
                 <h3>Useful Sublime Text plugins</h3>
