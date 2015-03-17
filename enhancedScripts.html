@@ -102,7 +102,8 @@
     driver.findElement(By.cssSelector("button[ng-click='openFileUploadDialog()']"));
 
     // angular button in 3rd table row built by ng-repeat
-    driver.findElement(By.cssSelector("tr[ng-repeat='variation in model.variations']:nth-child(2) button[ng-click='checkReRunModel(variation)']"));
+    driver.findElement(By.cssSelector("tr[ng-repeat='variation in model.variations']
+                        :nth-child(2) button[ng-click='checkReRunModel(variation)']"));
                 </code></pre>
 
                 <h3>Text content and Xpath selectors</h3>
@@ -273,8 +274,10 @@ function WD_findElement(selector, root, index) {
             driver.executeScript("arguments[0].scrollIntoView(true)", element._instance);
         };
         element.set = function setValue(newValue) {
-            console.log("SETTING VALUE " + (selector.match(/password/) ? "********" : ("" + newValue)));
-            if ((element.getAttribute("type") !== "file") && (element.getAttribute("nodeName") !== "SELECT")) {
+            console.log("SETTING VALUE " + (selector.match(/password/) 
+                            ? "********" : ("" + newValue)));
+            if ((element.getAttribute("type") !== "file") 
+                && (element.getAttribute("nodeName") !== "SELECT")) {
                 element.clear();
             }
             return element.sendKeys(newValue);
@@ -286,16 +289,20 @@ function WD_findElement(selector, root, index) {
             driver.executeScript("$(arguments[0]).next().show()", element._instance);   
         };
         element.setAttribute = function dropdown(attr, value) {
-            driver.executeScript("$(arguments[0]).attr('" + attr + "', '" + value + "')", element._instance);   
+            driver.executeScript("$(arguments[0]).attr('" + attr + "', '" + value + "')", 
+                                    element._instance);   
         };
         element.hover = function hover(x, y) {
             if (arguments.length) {
-                driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync(), ~~x, ~~y);    
+                driver.getMouse()._instance
+                    .mouseMoveSync(element._instance.getCoordinatesSync(), ~~x, ~~y);    
             } else {
-                driver.getMouse()._instance.mouseMoveSync(element._instance.getCoordinatesSync());
+                driver.getMouse()._instance
+                    .mouseMoveSync(element._instance.getCoordinatesSync());
             }                           
         };
-        element.coordinates = function coordinates () {//returns the on-page coordinates as a simple JSON object, e.g. {"y": 345, "x": 1237}
+        element.coordinates = function coordinates () {
+            //returns the on-page coordinates as a simple JSON object, e.g. {"y": 345, "x": 1237}
             return element._instance.getCoordinatesSync().onPageSync();
         };
         element.rClick = function rClick() {
@@ -303,7 +310,9 @@ function WD_findElement(selector, root, index) {
         };
         element.clickAt = function clickAt(xOffset, yOffset) {
             var elementCoordinates = element.coordinates();
-            browser.getMouse()._instance.clickSync({y: elementCoordinates.y + yOffset, x: elementCoordinates.x + xOffset});
+            browser.getMouse()._instance.clickSync(
+                {y: elementCoordinates.y + yOffset, 
+                x: elementCoordinates.x + xOffset});
         };
         element.isChecked = function () {
             return element.getAttribute("checked") === true;
@@ -323,7 +332,8 @@ function WD_findElement(selector, root, index) {
     var indexSet = (typeof index === "number");
     var firstElement = indexSet && (index === 0);
     try {
-        element = firstElement ? [root.findElement($by(selector))] : root.findElements($by(selector));
+        element = firstElement 
+            ? [root.findElement($by(selector))] : root.findElements($by(selector));
     } catch (e) {
         return {
             length: 0

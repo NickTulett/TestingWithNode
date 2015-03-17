@@ -198,6 +198,54 @@
     //now test the session has timed out
                 </code></pre>
 
+                <h3>CSS audits</h3>
+                <p>If you use a 3rd-party CSS framework, you will end up shipping a lot of styles you don't use. You might also want to limit the number of fonts and font-sizes to stop your site looking a mess. You can use this javascript routine in your browser's console to produce a quick CSS audit. This can be easily extended to look for other CSS properties or added to your webdriver scripts.</p>
+                <pre><code class="javascript">
+var used = 0; 
+var count = 0;
+var fontSizes = {};
+var fontFamilys = {};
+var colors = {};
+
+[].forEach.call(document.styleSheets, function (styleSheet) {
+    [].forEach.call(styleSheet.rules, function (rule) {
+        (rule.selectorText|| "").split(/, /).forEach(function (selector) {
+            if (rule.style) {
+                count++; 
+                if (selector && !selector.match(/:/) 
+                    && document.querySelectorAll(selector).length) {
+                    used++;
+                    if (rule.style.fontSize) {
+                        console.log(rule.selectorText + " " + rule.style.fontSize)
+                        fontSizes[rule.style.fontSize] = 
+                            fontSizes[rule.style.fontSize] || 0;
+                        fontSizes[rule.style.fontSize]++;
+                    }
+                    if (rule.style.fontFamily) {
+                        console.log(rule.selectorText + " " + rule.style.fontFamily)
+                        fontFamilys[rule.style.fontFamily] = 
+                            fontFamilys[rule.style.fontFamily] || 0;
+                        fontFamilys[rule.style.fontFamily]++;
+                    }
+                    if (rule.style.color) {
+                        console.log(rule.selectorText + " " + rule.style.color)
+                        colors[rule.style.color] = 
+                            colors[rule.style.color] || 0;
+                        colors[rule.style.color]++;
+                    }
+                }
+            }
+        });
+    });
+});
+console.log(count);
+console.log(used);
+console.log(Math.floor(100*used/count) + "%");
+console.dir(fontSizes);
+console.dir(fontFamilys);
+console.dir(colors);
+                </code></pre>                
+
                 <h3>Useful Sublime Text plugins</h3>
                 <ul>
                 <li><a href="https://sublime.wbond.net/">Package Control</a> - look for all the others here</li>
