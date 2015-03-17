@@ -262,9 +262,12 @@ function WD_findElement(selector, root, index) {
         if (element.length) {
             element = element[elementIndex || 0];
         }
-        // element.text = element.getText();
         element["$"] = function subElement(sel, subindex) {
             return WD_findElement(sel, element, subindex);
+        };
+        //bit of syntactic sugar as getAttribute is a pain to type
+        element["_"] = function element_getAttribute(attr) {
+            return element.getAttribute(attr);
         };
         element.scrollTo = function scrollTo() {
             driver.executeScript("arguments[0].scrollIntoView(true)", element._instance);
