@@ -211,7 +211,7 @@ var tallies = {
 };
 
 [].forEach.call(document.styleSheets, function (styleSheet) {
-    [].forEach.call(styleSheet.rules, function (rule) {
+    styleSheet.rules && [].forEach.call(styleSheet.rules, function (rule) {
         (rule.selectorText|| "").split(/, /).forEach(function (selector) {
             if (rule.style) {
                 count++; 
