@@ -166,6 +166,37 @@ var xml = require("xml");
                 <p>We can take the csv files from the webpagetest test and plot them in Jenkins to show any improvements or regressions between builds.</p>
                 <p>Install the <a href="https://wiki.jenkins-ci.org/display/JENKINS/Plot+Plugin">plot plugin</a> and in the webpagetest job add a "Plot build data" Post-build action.</p>
                 <p>Add a new plot group and set the titles as you prefer. Select a Line plot style then "Load data from csv file" and add the performance test result CSV file (it should be saved in the job's workspace for ease of access).</p>
+
+                <h2>Scheduling tests with a Jenkins Groovy script</h2>
+                <p>You may want to have one master job in Jenkins that runs all of the tests and aggregates the results.</p>
+                <p>You can run (test) jobs in parallel or in series using a postbuild groovy script:</p>
+<pre><code class="groovy">
+def PARALLEL(testList) {
+    def queuedTests = testList.collect{Jenkins.instance.getJob("${it}").scheduleBuild2(5, new Cause.UpstreamCause(manager.build))};
+    queuedTests.each(){it.get()};
+}
+def SERIALP(testName, params) {
+    Jenkins.instance.getJob(testName).scheduleBuild2(5, new Cause.UpstreamCause(manager.build), new ParametersAction(params)).get();    
+}
+def SERIAL(testName) {
+    Jenkins.instance.getJob(testName).scheduleBuild2(5, new Cause.UpstreamCause(manager.build)).get();  
+}
+
+
+def deployParams = 
+    [
+        new StringParameterValue('build_number', manager.build.buildVariables.get('build_number')),
+        new StringParameterValue('archive_number', manager.build.buildVariables.get('archive_number'))
+    ];
+SERIALP("Deploy", deployParams);
+
+SERIAL("Smoke");
+
+PARALLEL("Some Tests", "That Can", "Be Run", "In Parallel");
+
+SERIAL("Final Solo Test");
+</code></pre>
+
            
                 
                 <a href="tips.html">Next: Tips and tricks</a>
