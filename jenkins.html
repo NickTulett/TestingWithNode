@@ -172,21 +172,26 @@ var xml = require("xml");
                 <p>You can run (test) jobs in parallel or in series using a postbuild groovy script:</p>
 <pre><code class="groovy">
 def PARALLEL(testList) {
-    def queuedTests = testList.collect{Jenkins.instance.getJob("${it}").scheduleBuild2(5, new Cause.UpstreamCause(manager.build))};
+    def queuedTests = testList.collect{Jenkins.instance.getJob("${it}")
+                        .scheduleBuild2(5, new Cause.UpstreamCause(manager.build))};
     queuedTests.each(){it.get()};
 }
 def SERIALP(testName, params) {
-    Jenkins.instance.getJob(testName).scheduleBuild2(5, new Cause.UpstreamCause(manager.build), new ParametersAction(params)).get();    
+    Jenkins.instance.getJob(testName).scheduleBuild2(
+        5, new Cause.UpstreamCause(manager.build), new ParametersAction(params)).get();    
 }
 def SERIAL(testName) {
-    Jenkins.instance.getJob(testName).scheduleBuild2(5, new Cause.UpstreamCause(manager.build)).get();  
+    Jenkins.instance.getJob(testName).scheduleBuild2(
+        5, new Cause.UpstreamCause(manager.build)).get();  
 }
 
 
 def deployParams = 
     [
-        new StringParameterValue('build_number', manager.build.buildVariables.get('build_number')),
-        new StringParameterValue('archive_number', manager.build.buildVariables.get('archive_number'))
+        new StringParameterValue('build_number', 
+                manager.build.buildVariables.get('build_number')),
+        new StringParameterValue('archive_number', 
+                manager.build.buildVariables.get('archive_number'))
     ];
 SERIALP("Deploy", deployParams);
 
