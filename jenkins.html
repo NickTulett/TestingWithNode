@@ -167,7 +167,7 @@ var xml = require("xml");
                 <p>Install the <a href="https://wiki.jenkins-ci.org/display/JENKINS/Plot+Plugin">plot plugin</a> and in the webpagetest job add a "Plot build data" Post-build action.</p>
                 <p>Add a new plot group and set the titles as you prefer. Select a Line plot style then "Load data from csv file" and add the performance test result CSV file (it should be saved in the job's workspace for ease of access).</p>
 
-                <h2>Scheduling tests with a Jenkins Groovy script</h2>
+                <h2 id="jenkinsSP">Scheduling tests with a Jenkins Groovy script</h2>
                 <p>You may want to have one master job in Jenkins that runs all of the tests and aggregates the results.</p>
                 <p>You can run (test) jobs in parallel or in series using a postbuild groovy script:</p>
 <pre><code class="groovy">
