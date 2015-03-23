@@ -199,42 +199,46 @@
                 </code></pre>
 
                 <h3>CSS audits</h3>
-                <p>If you use a 3rd-party CSS framework, you will end up shipping a lot of styles you don't use. You might also want to limit the number of fonts and font-sizes to stop your site looking a mess. You can use this javascript routine in your browser's console to produce a quick CSS audit. This can be easily extended to look for other CSS properties or added to your webdriver scripts.</p>
+                <p>If you use a 3rd-party CSS framework, you will end up shipping a lot of styles you don't use. You might also want to limit the number of fonts and font-sizes to stop your site looking a mess. Webdriver can run a javascript routine in the browser's console to produce a quick CSS audit. This can be easily extended to look for other CSS properties.</p>
                 <pre><code class="javascript">
-var used = 0; 
-var count = 0;
-var tallies = {
-    "fontSize": {},
-    "fontFamily": {},
-    "color": {},
-    "backgroundColor": {}
-};
+function PTL_cssAudit() {
+    var cssTally = 
+        'var used = 0; ' +
+        'var count = 0;' +
+        'var tallies = {' +
+            '"fontSize": {},' +
+            '"fontFamily": {},' +
+            '"color": {},' +
+            '"backgroundColor": {}' +
+        '};' +
 
-[].forEach.call(document.styleSheets, function (styleSheet) {
-    styleSheet.rules && [].forEach.call(styleSheet.rules, function (rule) {
-        (rule.selectorText|| "").split(/, /).forEach(function (selector) {
-            if (rule.style) {
-                count++; 
-                if (selector && !selector.match(/:/) 
-                    && document.querySelectorAll(selector).length) {
-                    used++;
-                    for (var tally in tallies) {
-                        if (rule.style[tally]) {
-                            console.log(rule.selectorText + " " + rule.style.fontSize)
-                            tallies[tally][rule.style[tally]] = 
-                                tallies[tally][rule.style[tally]] || [];
-                            tallies[tally][rule.style[tally]].push(rule.selectorText);
-                        }
-                    }
-                }
-            }
-        });
-    });
-});
-console.log(count);
-console.log(used);
-console.log(Math.floor(100*used/count) + "%");
-console.dir(tallies, 2);
+        ' [].forEach.call(document.styleSheets, function (styleSheet) {' +
+            'styleSheet.rules && [].forEach.call(styleSheet.rules, function (rule) {' +
+                'if (rule.style) {' +
+                    '(rule.selectorText|| "").split(/, /).forEach(function (selector) {' +
+                        'count++; ' +
+                        'if (selector && !selector.match(/:/) ' +
+                            '&& document.querySelectorAll(selector).length) {' +
+                            'used++;' +
+                            'for (var tally in tallies) {' +
+                                'if (rule.style[tally] && (rule.style[tally] != "inherit")) {' +
+                                    'tallies[tally][rule.style[tally]] = ' +
+                                        'tallies[tally][rule.style[tally]] || [];' +
+                                    'tallies[tally][rule.style[tally]].push(rule.selectorText);' +
+                                '}' +
+                            '}' +
+                        '}' +
+                    '});' +
+                '}' +
+            '});' +
+        '});' +
+        'tallies.count = count;' +
+        'tallies.used = used;' +
+        'tallies.usage = Math.floor(100*used/count);' +
+        'return JSON.stringify(tallies);';
+    var audit = browser.executeScript(cssTally);
+    return JSON.parse(audit);
+}
                 </code></pre>                
 
                 <h3>Useful Sublime Text plugins</h3>
