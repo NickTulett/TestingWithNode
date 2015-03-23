@@ -169,7 +169,7 @@ var xml = require("xml");
 
                 <h2 id="jenkinsSP">Scheduling tests with a Jenkins Groovy script</h2>
                 <p>You may want to have one master job in Jenkins that runs all of the tests and aggregates the results.</p>
-                <p>You can run (test) jobs in parallel or in series using a postbuild groovy script:</p>
+                <p>You can run (test) jobs in parallel or in series using a <a href="http://wiki.hudson-ci.org/display/HUDSON/Groovy+Postbuild+Plugin">postbuild groovy script</a>:</p>
 <pre><code class="groovy">
 def PARALLEL(testList) {
     def queuedTests = testList.collect{Jenkins.instance.getJob("${it}")
