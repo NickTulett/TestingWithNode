@@ -202,6 +202,24 @@ PARALLEL(["Some Tests", "That Can", "Be Run", "In Parallel"]);
 SERIAL("Final Solo Test");
 </code></pre>
 
+                <h2>Jenkins Results Aggregation</h2>
+                <p>It's nice to see the results of a test run aggregated together, so you can see if you are making progress overall.</p>
+                <p>The option to aggregated results postbuild never worked for me in Jenkins. To get it to work, I create a unique fingerprint file in my main test runner job and copy it to each test job.</p>
+                <p>The you need to run a system groovy script to load the test aggregator with the results</p>
+                <p>Note that this appears in the job as a build step, so would actually be run before the test running script, above, but it does work:</p>
+<pre><code class="groovy">
+import jenkins.model.*
+import hudson.model.*
+
+def STjobs = "Deploy,Smoke,Some Tests,That Can,Be Run,In Parallel,Final Solo Test";
+def jobName = this.binding.build.project.name;
+
+// (re-)create a clean publishers list for the results
+Jenkins.instance.getJob(jobName).getPublishersList().removeAll(hudson.tasks.test.AggregatedTestResultPublisher);
+def atrp = new hudson.tasks.test.AggregatedTestResultPublisher(STjobs, true);
+Jenkins.instance.getJob(jobName).getPublishersList().add(atrp); 
+</code></pre>
+
            
                 
                 <a href="tips.html">Next: Tips and tricks</a>
