@@ -215,9 +215,12 @@ def STjobs = "Deploy,Smoke,Some Tests,That Can,Be Run,In Parallel,Final Solo Tes
 def jobName = this.binding.build.project.name;
 
 // (re-)create a clean publishers list for the results
-Jenkins.instance.getJob(jobName).getPublishersList().removeAll(hudson.tasks.test.AggregatedTestResultPublisher);
+Jenkins.instance.getJob(jobName).getPublishersList()
+        .removeAll(hudson.tasks.test.AggregatedTestResultPublisher);
+
 def atrp = new hudson.tasks.test.AggregatedTestResultPublisher(STjobs, true);
-Jenkins.instance.getJob(jobName).getPublishersList().add(atrp); 
+Jenkins.instance.getJob(jobName).getPublishersList()
+        .add(atrp); 
 </code></pre>
 
            
