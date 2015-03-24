@@ -172,18 +172,32 @@ var xml = require("xml");
                 <p>You can run (test) jobs in parallel or in series using a <a href="http://wiki.hudson-ci.org/display/HUDSON/Groovy+Postbuild+Plugin">postbuild groovy script</a>:</p>
 <pre><code class="groovy">
 def PARALLEL(testList) {
-    def queuedTests = testList.collect{Jenkins.instance.getJob("${it}")
-                        .scheduleBuild2(5, new Cause.UpstreamCause(manager.build))};
-    queuedTests.each(){it.get()};
+    def queuedTests = testList.collect{
+        Jenkins.instance.getJob("${it}").scheduleBuild2(5, new Cause.UserIdCause())
+    };
+    queuedTests.each() {
+        it.get()
+    };
+    testList.each() {
+        println "${it} #" + Jenkins.instance.getJob("${it}").getLastBuild().number;
+        println Jenkins.instance.getJob("${it}").getLastBuild().getResult().toString();
+    }
 }
+
 def SERIALP(testName, params) {
-    Jenkins.instance.getJob(testName).scheduleBuild2(
-        5, new Cause.UpstreamCause(manager.build), new ParametersAction(params)).get();    
+    println Jenkins.instance.getJob(testName)
+        .scheduleBuild2(5, new Cause.UserIdCause(), new ParametersAction(params)).get();   
+    println Jenkins.instance.getJob(testName)
+        .getLastBuild().getResult().toString();
 }
+
 def SERIAL(testName) {
-    Jenkins.instance.getJob(testName).scheduleBuild2(
-        5, new Cause.UpstreamCause(manager.build)).get();  
+    println Jenkins.instance.getJob(testName)
+        .scheduleBuild2(5, new Cause.UserIdCause()).get(); 
+    println Jenkins.instance.getJob(testName)
+        .getLastBuild().getResult().toString();
 }
+
 
 
 def deployParams = 
