@@ -173,7 +173,7 @@ var xml = require("xml");
 <pre><code class="groovy">
 def PARALLEL(testList) {
     def queuedTests = testList.collect{
-        Jenkins.instance.getJob("${it}").scheduleBuild2(5, new Cause.UserIdCause())
+        Jenkins.instance.getJob("${it}").scheduleBuild2(5, new Cause.UpstreamCause(manager.build));
     };
     queuedTests.each() {
         it.get()
@@ -186,14 +186,14 @@ def PARALLEL(testList) {
 
 def SERIALP(testName, params) {
     println Jenkins.instance.getJob(testName)
-        .scheduleBuild2(5, new Cause.UserIdCause(), new ParametersAction(params)).get();   
+        .scheduleBuild2(5, new Cause.UpstreamCause(manager.build), new ParametersAction(params)).get();   a
     println Jenkins.instance.getJob(testName)
         .getLastBuild().getResult().toString();
 }
 
 def SERIAL(testName) {
     println Jenkins.instance.getJob(testName)
-        .scheduleBuild2(5, new Cause.UserIdCause()).get(); 
+        .scheduleBuild2(5, new Cause.UpstreamCause(manager.build)).get(); 
     println Jenkins.instance.getJob(testName)
         .getLastBuild().getResult().toString();
 }
