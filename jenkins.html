@@ -179,22 +179,22 @@ def PARALLEL(testList) {
         it.get()
     };
     testList.each() {
-        println "${it} #" + Jenkins.instance.getJob("${it}").getLastBuild().number;
-        println Jenkins.instance.getJob("${it}").getLastBuild().getResult().toString();
+        manager.listener.logger.println "${it} #" + Jenkins.instance.getJob("${it}").getLastBuild().number;
+        manager.listener.logger.println Jenkins.instance.getJob("${it}").getLastBuild().getResult().toString();
     }
 }
 
 def SERIALP(testName, params) {
-    println Jenkins.instance.getJob(testName)
+    manager.listener.logger.println Jenkins.instance.getJob(testName)
         .scheduleBuild2(5, new Cause.UpstreamCause(manager.build), new ParametersAction(params)).get();   a
-    println Jenkins.instance.getJob(testName)
+    manager.listener.logger.println Jenkins.instance.getJob(testName)
         .getLastBuild().getResult().toString();
 }
 
 def SERIAL(testName) {
-    println Jenkins.instance.getJob(testName)
+    manager.listener.logger.println Jenkins.instance.getJob(testName)
         .scheduleBuild2(5, new Cause.UpstreamCause(manager.build)).get(); 
-    println Jenkins.instance.getJob(testName)
+    manager.listener.logger.println Jenkins.instance.getJob(testName)
         .getLastBuild().getResult().toString();
 }
 
