@@ -148,7 +148,8 @@ var xml = require("xml");
             if (require("os").hostname() !== "test-Latitude-E6500") {
                 fs.writeFileSync(HOME + "/Jenkins/workspace/" + this.testName + "/log.xml", 
                     xml(this.testTag, {"declaration": {"encoding": "UTF-8"}}));
-                console.log("Results saved to " + HOME + "/Jenkins/workspace/" + this.testName + "/log.xml");
+                console.log("Results saved to " + HOME + "/Jenkins/workspace/" 
+                    + this.testName + "/log.xml");
             }
         },
         perfResult: function log_perfResult(load, metric, median, max) {
@@ -179,14 +180,17 @@ def PARALLEL(testList) {
         it.get()
     };
     testList.each() {
-        manager.listener.logger.println "${it} #" + Jenkins.instance.getJob("${it}").getLastBuild().number;
-        manager.listener.logger.println Jenkins.instance.getJob("${it}").getLastBuild().getResult().toString();
+        manager.listener.logger.println "${it} #" 
+            + Jenkins.instance.getJob("${it}").getLastBuild().number;
+        manager.listener.logger.println Jenkins.instance
+            .getJob("${it}").getLastBuild().getResult().toString();
     }
 }
 
 def SERIALP(testName, params) {
     manager.listener.logger.println Jenkins.instance.getJob(testName)
-        .scheduleBuild2(5, new Cause.UpstreamCause(manager.build), new ParametersAction(params)).get();   a
+        .scheduleBuild2(5, new Cause.UpstreamCause(manager.build), 
+        new ParametersAction(params)).get();
     manager.listener.logger.println Jenkins.instance.getJob(testName)
         .getLastBuild().getResult().toString();
 }
