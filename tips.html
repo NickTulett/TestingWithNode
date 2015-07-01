@@ -189,9 +189,10 @@
         //do something else, such as check for errors in the other 3 lines
     }
 
-    greplog: function PTL_greplog(greppee, count, reverse) {
+    function greplog(greppee, count, reverse) {
         console.log("GREPPING LOG FOR '" + greppee + "'");
-        var greppedLog = sh.exec("ssh tester@" + this.host + " \" grep '" + greppee + "' /var/log/tomcat7/AUT.log\"").stdout;
+        var greppedLog = sh.exec("ssh tester@" + this.host + " \" grep '" + greppee 
+            + "' /var/log/tomcat7/AUT.log\"").stdout;
         if (count) {
             greppedLog = greppedLog.split(/\n/).slice(-count).join("\n");
         }
