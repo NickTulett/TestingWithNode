@@ -91,6 +91,15 @@
     div[style*='display: block'] li[tooltip='Chart']
                 </code></pre>
 
+                <h3>Check for a broken image</h3>
+                <p>If you have an image with a broken link, your users will just see an ugly icon.</p>
+                <p>You can check that an image is present by getting its naturalWidth property (supported by browsers and IE11).</p>
+                <pre><code class="javascript">
+    assert($("span[ng-show='report.attachment.id'] img", 1).getAttribute("naturalWidth"),
+        "PDF icon missing");
+
+                </code></pre>
+
                 <h3>Pull data from a text file in slices</h3>
                 <pre><code class="javascript">
     //in this example I want to fill a comments array
