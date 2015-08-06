@@ -239,8 +239,15 @@ function PTL_cssAudit() {
     var audit = browser.executeScript(cssTally);
     return JSON.parse(audit);
 }
-                </code></pre>                
+                </code></pre>          
 
+                <h3>Check for duplicate ids</h3>
+                <pre><code class="javascript">
+log.startCase("Checking for duplicate element ids");
+assert(!$("[id]").sort().some(function(e,i,a) {return a.lastIndexOf(e) !== i;}),
+    "Duplicate ids present");
+                </code></pre>
+                
                 <h3>Useful Sublime Text plugins</h3>
                 <ul>
                 <li><a href="https://sublime.wbond.net/">Package Control</a> - look for all the others here</li>
