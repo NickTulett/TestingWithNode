@@ -267,11 +267,10 @@ function PTL_cssAudit() {
                 <h3>Check for duplicate ids</h3>
                 <pre><code class="javascript">
 log.startCase("Checking for duplicate element ids");
-assert(!$("[id]")
-    .map(function (e) {
-        return e.getAttribute("id");
-    }).some(function(e,i,a) {
-        return (a.lastIndexOf(e) !== i) && console.log(e);
+assert(!$("[id]").map(function (e) {
+        return e.id;
+    }).filter(function(e,i,a) {
+        return ((a.lastIndexOf(e) !== i) && !console.log(e));
     }),
     "Duplicate ids present");
                 </code></pre>
