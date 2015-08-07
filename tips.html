@@ -268,7 +268,7 @@ function PTL_cssAudit() {
                 <pre><code class="javascript">
 log.startCase("Checking for duplicate element ids");
 assert(!$("[id]").map(function (e) {
-        return e.id;
+        return e.getAttribute("id");
     }).filter(function(e,i,a) {
         return ((a.lastIndexOf(e) !== i) && !console.log(e));
     }),
