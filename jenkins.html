@@ -242,6 +242,163 @@ Jenkins.instance.getJob(jobName).getPublishersList()
 </code></pre>
                 <p>Note that results aggregation may fail if the clocks on the Jenkins master and the slaves are out of sync.</p>
 
+
+                <h2>Jenkins Slave Status Monitor</h2>
+                <p>I have a 14 slaves testing 2 projects and as I share Jenkins with the developers and all of their build jobs it is a pain keeping track of the tests through the standard Jenkins web UI.</p>
+
+                <p>I decided to knock up a small server that could interrogate the <a href="https://wiki.jenkins-ci.org/display/JENKINS/Remote+access+API" target="blank">Jenkins API</a> to show just the current status of the test jobs.</p>
+
+                <p>For node, the Jenkins API is encapsulated within <a href="https://www.npmjs.com/package/nestor">nestor</a>. Adding this to a minimal server gives us:</p>
+<pre><code class="javascript">
+var http   = require("http");
+var nestor = new (require('nestor'))('<jenkins url>');
+var fs     = require("fs");
+
+var server = http.createServer(function (req, res) {
+    if (req.url.match(/\.json/)) {
+        //computer, parseFeed, info
+        nestor[req.url.split(".json")[0].replace(/\//g, "")](
+            function (err, result) {
+                err && console.dir(err);
+                res.writeHead(200, {"Content-Type": "application/json"});
+                res.end(JSON.stringify(result));
+                return;
+            }
+        );
+    } else {
+        var template = fs.readFileSync("index.html").toString();
+        res.writeHead(200, {"Content-Type": "text/html"});
+        res.end(template);
+    }
+    
+});
+server.listen(1337);
+</code></pre>
+                <p>This gives us a server that listens on port 1337 and delivers either the json from the nestor computer, parsefeed and info calls or returns an html page to display the status monitor:</p>
+<pre><code class="html">
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <style>
+        div {
+            display: inline-block;
+            border: solid 1px gray;
+            padding: 8px;
+            margin: 4px;
+            border-radius: 5px 5px 5px;
+            font-size: 24px;
+            font-family: sans-serif;
+            box-shadow: 1px 1px 5px #808080;
+        }
+        
+        div.active {
+            background-color: white;
+        }
+        .idle {
+            background-color: lightgray;
+        }
+
+        #portalTesters {
+            background-color: #E0FFE0;
+        }
+        #portalTesters div{
+            /*font-size: 32px;*/
+            width: 45%;
+        }
+        #rssTesters {
+            background-color: lightcyan;
+        }
+        #rssTesters div {
+            width: 20%;
+        }
+    </style>
+</head>
+
+<body>
+<div id="portalTesters">
+    <div id="Portal_Smoke_Tester"><h3>Portal_Smoke_Tester</h3><p></p></div>
+    <div id="Portal_Web_Test_LNX"><h3>Portal_Web_Test_LNX</h3><p></p></div>
+    <div id="Portal_Web_Test_OSX"><h3>Portal_Web_Test_OSX</h3><p></p></div>
+    <div id="Portal_Web_Test_OSX_YOS"><h3>Portal_Web_Test_OSX_YOS</h3><p></p></div>
+    <div id="Portal_Web_Test_W7"><h3>Portal_Web_Test_W7</h3><p></p></div>
+    <div id="Portal_Web_Test_IE11"><h3>Portal_Web_Test_IE11</h3><p></p></div>
+</div>
+
+<div id="rssTesters">
+    <div id="test_732_uk"><h3>test_732_uk</h3><p></p></div>
+    <div id="test_732_us"><h3>test_732_us</h3><p></p></div>
+    <div id="test_764_uk"><h3>test_764_uk</h3><p></p></div>
+    <div id="test_764_us"><h3>test_764_us</h3><p></p></div>
+    <div id="test_832_uk"><h3>test_832_uk</h3><p></div>
+    <div id="test_832_us"><h3>test_832_us</h3><p></div>
+    <div id="test_864_uk"><h3>test_864_uk</h3><p></div>
+    <div id="test_864_us"><h3>test_864_us</h3><p></p></div>
+</div>
+
+</body>
+<script>
+    function xhrJSON(requestType, jURI, jParm, jCallback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(requestType, jURI, true);
+        xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        xhr.onreadystatechange = function () {
+            if ((xhr.readyState === 4) && (xhr.status === 200)) {
+                jCallback(JSON.parse(xhr.responseText ));
+            }
+        };
+        xhr.send(jParm);
+    }
+    function getJSON(jURI, jParm, jCallback) {
+        xhrJSON("GET", jURI, jParm, jCallback);
+    }
+
+    function refreshStatus() {
+        getJSON("computer.json", "", function (result) {
+            result.computer.forEach(function (computer) {
+                if (computer.displayName.match(/test/i)) {
+                    var computerName = computer.displayName.replace(/ /g, "_");
+                    if (computer.idle || !computer.executors[0].currentExecutable) {
+                        document.querySelector("#" + computerName).style.backgroundImage = "";
+                        document.querySelector("#" + computerName).className = "idle";
+                        if (document.querySelector("#" + computerName + " p span")) {
+                            if (document.querySelector("#" + computerName + " p span")
+                                    .innerHTML.match(/(END|(10|9)\d)/)) {
+                                document.querySelector("#" + computerName + " p span")
+                                    .innerHTML = "END";
+                            }
+                        }
+                    } else {
+                        var job = computer.executors[0].currentExecutable.url;
+                        var jobName = computer.executors[0].currentExecutable.url
+                            .split(/job\//)[1].replace(/(%20|\/)/g, " ").split(/ label/)[0];
+                        var progress = computer.executors[0].progress + "%";
+                        document.querySelector("#" + computerName + " p").innerHTML 
+                            = "<a href='" + job + "'>" + jobName + "</a>&nbsp;<span>" 
+                            + progress + "</span>";
+                        document.querySelector("#" + computerName).className = "active";
+                        document.querySelector("#" + computerName).style.backgroundImage 
+                            = "linear-gradient(to right, yellow " + progress + ", white " 
+                                + progress + ")"; 
+                    }
+                }
+            });
+        });
+    }
+    refreshStatus();
+    window.setInterval(refreshStatus, 20e3);
+
+</script>
+
+</html>
+</pre></code>
+                <p>Each slave's progress is contained within a div. Every 20 seconds it requests the computer data from nestor and updates the page.</p>
+                <p>If the slave is idle, the div turns grey.</p>
+                <p>If the slave is running a job, it has a yellow linear-gradient background that expands to fill the div as the job's progress increases. This also serves as a useful visual alert - the div should not stay yellow for long - if it does then the job may have stalled and needs attention.</p>
+
+
+
            
                 
                 <a href="tips.html">Next: Tips and tricks</a>
