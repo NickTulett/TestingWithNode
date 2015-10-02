@@ -277,9 +277,7 @@ server.listen(1337);
                 <p>This gives us a server that listens on port 1337 and delivers either the json from the nestor computer, parsefeed and info calls or returns an html page to display the status monitor:</p>
 <pre><code class="html">
 
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-    <style>
+//style the divs with borders and colours
         div {
             display: inline-block;
             border: solid 1px gray;
@@ -311,32 +309,30 @@ server.listen(1337);
         #rssTesters div {
             width: 20%;
         }
-    </style>
-</head>
 
-<body>
-<div id="portalTesters">
-    <div id="Portal_Smoke_Tester"><h3>Portal_Smoke_Tester</h3><p></p></div>
-    <div id="Portal_Web_Test_LNX"><h3>Portal_Web_Test_LNX</h3><p></p></div>
-    <div id="Portal_Web_Test_OSX"><h3>Portal_Web_Test_OSX</h3><p></p></div>
-    <div id="Portal_Web_Test_OSX_YOS"><h3>Portal_Web_Test_OSX_YOS</h3><p></p></div>
-    <div id="Portal_Web_Test_W7"><h3>Portal_Web_Test_W7</h3><p></p></div>
-    <div id="Portal_Web_Test_IE11"><h3>Portal_Web_Test_IE11</h3><p></p></div>
-</div>
+&lt;div id="portalTesters">
+    &lt;div id="Portal_Smoke_Tester">&lt;h3>Portal_Smoke_Tester&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+    &lt;div id="Portal_Web_Test_LNX">&lt;h3>Portal_Web_Test_LNX&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+    &lt;div id="Portal_Web_Test_OSX">&lt;h3>Portal_Web_Test_OSX&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+    &lt;div id="Portal_Web_Test_OSX_YOS">&lt;h3>Portal_Web_Test_OSX_YOS&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+    &lt;div id="Portal_Web_Test_W7">&lt;h3>Portal_Web_Test_W7&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+    &lt;div id="Portal_Web_Test_IE11">&lt;h3>Portal_Web_Test_IE11&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+&lt;/div>
 
-<div id="rssTesters">
-    <div id="test_732_uk"><h3>test_732_uk</h3><p></p></div>
-    <div id="test_732_us"><h3>test_732_us</h3><p></p></div>
-    <div id="test_764_uk"><h3>test_764_uk</h3><p></p></div>
-    <div id="test_764_us"><h3>test_764_us</h3><p></p></div>
-    <div id="test_832_uk"><h3>test_832_uk</h3><p></div>
-    <div id="test_832_us"><h3>test_832_us</h3><p></div>
-    <div id="test_864_uk"><h3>test_864_uk</h3><p></div>
-    <div id="test_864_us"><h3>test_864_us</h3><p></p></div>
-</div>
+&lt;div id="rssTesters">
+    &lt;div id="test_732_uk">&lt;h3>test_732_uk&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+    &lt;div id="test_732_us">&lt;h3>test_732_us&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+    &lt;div id="test_764_uk">&lt;h3>test_764_uk&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+    &lt;div id="test_764_us">&lt;h3>test_764_us&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+    &lt;div id="test_832_uk">&lt;h3>test_832_uk&lt;/h3>&lt;p>&lt;/div>
+    &lt;div id="test_832_us">&lt;h3>test_832_us&lt;/h3>&lt;p>&lt;/div>
+    &lt;div id="test_864_uk">&lt;h3>test_864_uk&lt;/h3>&lt;p>&lt;/div>
+    &lt;div id="test_864_us">&lt;h3>test_864_us&lt;/h3>&lt;p>&lt;/p>&lt;/div>
+&lt;/div>
 
-</body>
-<script>
+</code></pre>
+
+</pre></code class="javascript">
     function xhrJSON(requestType, jURI, jParm, jCallback) {
         var xhr = new XMLHttpRequest();
         xhr.open(requestType, jURI, true);
@@ -386,8 +382,6 @@ server.listen(1337);
     }
     refreshStatus();
     window.setInterval(refreshStatus, 20e3);
-
-</script>
 
 </pre></code>
                 <p>Each slave's progress is contained within a div. Every 20 seconds it requests the computer data from nestor and updates the page.</p>
