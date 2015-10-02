@@ -276,8 +276,6 @@ server.listen(1337);
 </code></pre>
                 <p>This gives us a server that listens on port 1337 and delivers either the json from the nestor computer, parsefeed and info calls or returns an html page to display the status monitor:</p>
 <pre><code class="html">
-<!DOCTYPE html>
-<html>
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
@@ -391,7 +389,6 @@ server.listen(1337);
 
 </script>
 
-</html>
 </pre></code>
                 <p>Each slave's progress is contained within a div. Every 20 seconds it requests the computer data from nestor and updates the page.</p>
                 <p>If the slave is idle, the div turns grey.</p>
