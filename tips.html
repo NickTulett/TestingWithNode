@@ -274,7 +274,31 @@ assert(!$("[id]").map(function (e) {
     }),
     "Duplicate ids present");
                 </code></pre>
-                
+
+                <h3>Making things stand out in console logs</h3>
+                <p>Allow a string or array of strings to be wrapped in a rectangular border:</p>
+                <pre><code class="javascript">
+String.prototype.padded = function (finalLength) {
+    //pad a string with spaces to make it finalLength long
+    return (this + (new Array(120)).join(" ")).slice(0,finalLength);
+};
+Array.prototype.bordered = function (bChar) {
+    //find the length of the longest string in this array
+    var bWidth = this.reduce(function (a, b) { return a.length > b.length ? a : b; }).length;
+    //create a line of bChars to border this string
+    var bLine = (new Array(bWidth + 5)).join(bChar).slice(0,120);
+    //return the array as a newline-separated string with a bChar border
+    return "\n" + bLine + "\n" 
+        + this.map(function (a) {
+            return bChar + " " + (a.padded(bWidth)) + " " + bChar;
+        }).join("\n")
+        + "\n" + bLine + "\n";
+};
+String.prototype.bordered = function (bChar) {
+    return this.split(/\n/).bordered(bChar);
+};
+                </code></pre>                
+
                 <h3>Useful Sublime Text plugins</h3>
                 <ul>
                 <li><a href="https://sublime.wbond.net/">Package Control</a> - look for all the others here</li>
