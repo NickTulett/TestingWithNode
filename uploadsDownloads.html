@@ -93,7 +93,7 @@
 
                 <h3>Internet Explorer download confirmation</h3>
                 <p>This browser will pop up an out of process dialog every time you try to download something, so clicking on a link will freeze webdriver as it waits for the download to complete.</p>
-                <p>This annoyance can be circumvented by using keypresses to activate and confirm the download. Webdriver can handle a key press on an element, but we need another npm module, <a href="https://www.npmjs.com/package/node_keyboard">node_keyboard</a> to send key presses to the download security theatre dialog.</p>
+                <p>This annoyance can be circumvented by using keypresses to activate and confirm the download. Webdriver can handle a key press on an element, but we need another npm module, <a href="https://www.npmjs.com/package/robotjs">ROBOTJS</a> to send key presses to the download security theatre dialog.</p>
                 <pre><code class="javascript">
     var KB = require("node_keyboard");
 
@@ -105,10 +105,10 @@
     $("a").sendKeys(PTL.WD.Keys.ENTER);
     
     Delay(5e3);
-    //node_keyboard handles the download bar
-    KB.press(KB.Key_Alt_L);
-    KB.type(KB.Key_S);
-    KB.release(KB.Key_Alt_L);
+    //robotjs handles the download bar
+    var robot = require("robotjs");
+    robot.keyToggle("s", "down", "alt");
+    robot.keyToggle("s", "up", "alt");
     //depending on IE's settings, you may require an additional Alt-Q shortcut to close the dialog
                 </code></pre>
                 
