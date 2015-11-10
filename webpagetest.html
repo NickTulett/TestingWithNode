@@ -70,14 +70,12 @@
         {setValue: ['id=password', 'PASSWORD']},
 
         {logData: 1},//gather metrics only after signing in
-        //setDOMRequest and setDOMElement will only work with IE10 and URL Blast
-        {setDOMElement: 'class=barchart'},
         {clickAndWait: 'id=signIn'}
     ]);
                 </code></pre>
 
                 <h3>Webpagetest settings</h3>
-                <p>You also pass in a settings object to tell webpagetest which location/browser to user, connection quality and other parameters which affect the types of results you get:</p>
+                <p>You also pass in a settings object to tell webpagetest which location/browser to use, connection quality and other parameters which affect the types of results you get:</p>
                 <pre><code class="javascript">
     var testSettings = {  
         "location": "Local-IE10",
