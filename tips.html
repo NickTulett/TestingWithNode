@@ -299,6 +299,23 @@ String.prototype.bordered = function (bChar) {
 };
                 </code></pre>                
 
+                <h3 id="POSTjson">POSTing JSON to the server</h3>
+                <p>Often someone will tap you on the shoulder and ask if you can use your automation scripts to fill in a web-based form for them to save them having to do it hundreds of times. This is a perfectly cromulent reason to use automation but driving the front-end is fraught with danger from timing issues. A far better idea is to work out what data the page is POSTing and replicate that request directly.</p>
+                <p>There is no need to employ any external libraries or npm modules to POST data, you can use the browser itself. This has the benefit of occuring within the existing session, so you don't need to worry about spoofing credentials or cookies.</p>
+                <pre><code class="javascript">
+function WD_postJSON(url, payload) {
+    var xhr = driver.executeScript(
+        "xhr = new XMLHttpRequest();" +
+        "xhr.open('POST', '" + url + "', false);" +
+        "xhr.setRequestHeader('Content-Type','application/json;charset=UTF-8');" +
+        "xhr.send('" + JSON.stringify(payload) + "');" +
+        "return (xhr.status + '###' + xhr.responseText);"
+    );
+    xhr = xhr.split("###");
+    return {status: xhr[0], responseText: xhr[1]};
+}
+                </code></pre>                       
+
                 <h3>Useful Sublime Text plugins</h3>
                 <ul>
                 <li><a href="https://sublime.wbond.net/">Package Control</a> - look for all the others here</li>
