@@ -314,7 +314,20 @@ function WD_postJSON(url, payload) {
     xhr = xhr.split("###");
     return {status: xhr[0], responseText: xhr[1]};
 }
-                </code></pre>                       
+                </code></pre>        
+
+                <h3>Dealing with iframes</h3>
+                <p>Webdriver deals with iframes by switching context.</p>
+                <p>If you want the $() method to work inside an iframe rather than the page's root document, do this:</p>
+                <pre><code = "javascript">
+browser.switchTo().frame("frmContent");//for an iframe with id frmContent
+                </code></pre>
+                <p>To return to the main document:</p>
+                <pre><code = "javascript">
+browser.switchTo().defaultContent();
+                </code></pre>
+
+
 
                 <h3>Useful Sublime Text plugins</h3>
                 <ul>
