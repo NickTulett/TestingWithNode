@@ -327,6 +327,15 @@ browser.switchTo().frame("frmContent");//for an iframe with id frmContent
 browser.switchTo().defaultContent();
                 </code></pre>
 
+                <h3>Reading resource headers</h3>
+                <p>Let's assume you bundle your javascript to reduce request counts, want to ensure it is being gzipped but the name of the javascript resource changes between builds so that the browser does not fall back to the cached version when your javascript is updated</p>
+                <p>You can query the page itself to find the current URL for the javascript bundle, request it separately and check its headers:</p>
+                <pre><code class="javascript">
+log.startCase("Check javascript bundle is gzipped");
+var firstJS = browser.executeScript("return document.scripts[0].src;");
+var CEheader = PTL.getHeaders(firstJS, "Content-Encoding");
+assert(CEheader == "gzip", "gzip not enabled");
+                </code></pre>
 
 
                 <h3>Useful Sublime Text plugins</h3>
