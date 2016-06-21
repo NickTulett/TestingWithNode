@@ -223,7 +223,7 @@ SERIAL("Final Solo Test");
                 <h2>Jenkins Results Aggregation</h2>
                 <p>It's nice to see the results of a test run aggregated together, so you can see if you are making progress overall.</p>
                 <p>The option to aggregated results postbuild never worked for me in Jenkins. To get it to work, I create a unique fingerprint file in my main test runner job and copy it to each test job.</p>
-                <p>The you need to run a system groovy script to load the test aggregator with the results</p>
+                <p>Then you need to run a system groovy script to load the test aggregator with the results</p>
                 <p>Note that this appears in the job as a build step, so would actually be run before the test running script, above, but it does work:</p>
 <pre><code class="groovy">
 import jenkins.model.*
@@ -388,6 +388,29 @@ server.listen(1337);
                 <p>If the slave is idle, the div turns grey.</p>
                 <p>If the slave is running a job, it has a yellow linear-gradient background that expands to fill the div as the job's progress increases. This also serves as a useful visual alert - the div should not stay yellow for long - if it does then the job may have stalled and needs attention.</p>
 
+                <h2>Jenkins Log Parsing</h2>
+                <p>I was interested to see where my tests were spending their time. Were they navigating to a lot of pages, finding a lot of elements, clicking many buttons, etc.</p>
+                <p>This information is quite easy (and really quick) to pull out of each job's console log. It helps to have your test jobs grouped into a View in Jenkins and to have specific wording for interesting events in your log.</p>
+                <p>Go to the Manage Jenkins page and open the Script Console (this may require a plug-in) and enter a script like this:</p>
+<pre><code class="groovy">
+def J = Jenkins.instance.getView("Web Tests").getItems()
+for (job in J) {
+  println(job.name);
+  println("MINS " + (job.getLastCompletedBuild().getDuration()/60000).toInteger())
+
+  def L = job.getLastCompletedBuild().getLog()
+  println("GO " + (L =~ /NAVIGATING/).count)
+  println("LOCATE "+ (L =~ /LOCATING ELEMENT/).count)
+  println("CLICK " + (L =~ /CLICKING/).count)
+  println("SET " + (L =~ /SETTING/).count)
+  println("CHECK " + (L =~ /ROUGHLY/).count)
+  println("REST " + (L =~ /status:/).count)
+  println("SSH " + (L =~ /SSH to/).count)
+  println("UPLOAD " + (L =~ /UPLOADING/).count)    
+  println()
+}
+</code></pre>
+                <p>Then you get a list of all your tests with the time taken in minutes and the number of times each event/action occured.</p>
 
 
            
