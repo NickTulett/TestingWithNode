@@ -349,6 +349,39 @@ assert(CEheader == "gzip", "gzip not enabled");
     var driver = new wd["FirefoxDriver"](profile);                
                 </code></pre>
 
+
+                <h3>Using ZAP proxy server in testing</h3>
+                <p>ZAP has a JSON API we can use during testing. We cannot use the XHR object in the browser because the ZAP server is not the same domain as the AUT, so we run wget as a child process and save the responses to a temporary file.</p>
+                <p>These are some routines to start a new ZAP session (call this at the start of your test script) and 2 routines to return a summary or a detailed breakdown of every HTTP request logged during the test:</p>
+                <pre><code class="javascript">
+    var sh = require("child_process").execSync;
+    var fs = require("fs");
+
+    function WD_zapGET(URL) {//helper routine for the methods below
+        var zapTemp = "ZAPtemp.json";
+        sh(`wget -O ${zapTemp} "${URL}"`);
+        var zapResponse = fs.readFileSync(zapTemp).toString(); 
+        fs.unlinkSync(zapTemp);
+        return JSON.parse(zapResponse);         
+    }
+    function WD_zapSession(baseURL) {//create a new test session
+        //cannot use getJSON due to CORS, so use wget
+        var zapResponse = this.WD.zapGET(`http://192.168.10.130:8080/JSON/httpSessions/action/createEmptySession/?zapapiformat=JSON&apikey=${ZAPAPIKEY}&site=${baseURL}&session=WD`);
+        assert(zapResponse.Result,
+            "Could not start ZAP session");
+    }
+    function WD_zapRequestSummary(baseURL) {//request summary from test session
+        var zapResponse = this.WD.zapGET(`http://192.168.10.130:8080/JSON/search/view/urlsByRequestRegex/?zapapiformat=JSON&regex=.*&baseurl=${baseURL}&start=&count=`);
+        //id, url, status code, method, time
+        return zapResponse.urlsByRequestRegex;
+    }
+    function WD_zapRequestDetail(baseURL) {//full requests and responses from test session
+        var zapResponse = this.WD.zapGET(`http://192.168.10.130:8080/JSON/search/view/messagesByRequestRegex/?zapapiformat=JSON&regex=.*&baseurl=${baseURL}&start=&count=`);
+        //id, requestHeader, requestBody, cookieParams, responseHeader, responseBody
+        return zapResponse.messagesByRequestRegex;
+    }                    
+                </code></pre>
+
                 <h3>Useful Sublime Text plugins</h3>
                 <ul>
                 <li><a href="https://sublime.wbond.net/">Package Control</a> - look for all the others here</li>
