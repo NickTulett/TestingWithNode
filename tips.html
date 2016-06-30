@@ -368,21 +368,21 @@ assert(CEheader == "gzip", "gzip not enabled");
         //cannot use getJSON due to CORS, so use wget
         var zapResponse = WD_zapGET(
             `http://192.168.10.130:8080/JSON/httpSessions/action/createEmptySession/?
-            zapapiformat=JSON&apikey=${ZAPAPIKEY}&site=${baseURL}&session=WD`);
+            zapapiformat=JSON&amp;apikey=${ZAPAPIKEY}&amp;site=${baseURL}&amp;session=WD`);
         assert(zapResponse.Result,
             "Could not start ZAP session");
     }
     function WD_zapRequestSummary(baseURL) {//request summary from test session
         var zapResponse = WD_zapGET(
         `http://192.168.10.130:8080/JSON/search/view/urlsByRequestRegex/
-        ?zapapiformat=JSON&regex=.*&baseurl=${baseURL}&start=&count=`);
+        ?zapapiformat=JSON&amp;regex=.*&amp;baseurl=${baseURL}&amp;start=&amp;count=`);
         //id, url, status code, method, time
         return zapResponse.urlsByRequestRegex;
     }
     function WD_zapRequestDetail(baseURL) {//full requests and responses from test session
         var zapResponse = WD_zapGET(
         `http://192.168.10.130:8080/JSON/search/view/messagesByRequestRegex/
-        ?zapapiformat=JSON&regex=.*&baseurl=${baseURL}&start=&count=`);
+        ?zapapiformat=JSON&amp;regex=.*&amp;baseurl=${baseURL}&amp;start=&amp;count=`);
         //id, requestHeader, requestBody, cookieParams, responseHeader, responseBody
         return zapResponse.messagesByRequestRegex;
     }                    
