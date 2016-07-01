@@ -368,7 +368,7 @@ assert(CEheader == "gzip", "gzip not enabled");
         //cannot use getJSON due to CORS, so use wget
         var zapResponse = WD_zapGET(
             `http://192.168.10.130:8080/JSON/core/action/newSession/?
-            zapapiformat=JSON&apikey=Romonet&name=WD&overwrite=true`);
+            zapapiformat=JSON&apikey=APIKEY&name=WD&overwrite=true`);
         assert(zapResponse.Result,
             "Could not start ZAP session");
     }
