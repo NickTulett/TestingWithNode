@@ -347,6 +347,19 @@ browser.switchTo().defaultContent();
                 <p>Let's assume you bundle your javascript to reduce request counts, want to ensure it is being gzipped but the name of the javascript resource changes between builds so that the browser does not fall back to the cached version when your javascript is updated</p>
                 <p>You can query the page itself to find the current URL for the javascript bundle, request it separately and check its headers:</p>
                 <pre><code class="javascript">
+function getHeaders(url, specificHeader) {
+    var xhr_headers = driver.executeScript(
+        "xhr = new XMLHttpRequest();" +
+        "xhr.open('GET', '" + url + "', false);" +
+        "xhr.setRequestHeader('Accept-Encoding', 'gzip');" +
+        "xhr.send();" +
+        (specificHeader ? 
+            "return xhr.getResponseHeader('" + specificHeader + "');" : 
+            "return xhr.getAllResponseHeaders();")
+    );
+    return xhr_headers;
+}
+
 log.startCase("Check javascript bundle is gzipped");
 var firstJS = browser.executeScript("return document.scripts[0].src;");
 var CEheader = PTL.getHeaders(firstJS, "Content-Encoding");
