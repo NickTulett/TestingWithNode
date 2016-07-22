@@ -137,31 +137,47 @@
                 <p>You might need to control the web server to set up the test environment or poll a log to check server side progress or errors.</p>
                 <p>To avoid having to enter an ssh password every time, <a href="http://www.thegeekstuff.com/2008/11/3-steps-to-perform-ssh-login-without-password-using-ssh-keygen-ssh-copy-id/">set up an ssh key</a>.</p>
                 <pre><code class="javascript">
-    var sh = require("execSync");
+                <p>On Windows, download and run the full <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">putty</a> installer to get the plink ssh client.</p>
 
-    function ssh(commands, user, stdout) {
-        console.log("STARTING SSH SESSION");
-        if (typeof user == "string") {
-            user = user || "tester";
-        } else {
-            stdout = user;
-            user = "tester";
-        }
+    function ssh(commands, user, host) {
         if (typeof commands == "string") {
             commands = [commands];
         }
-        if (!stdout) {
-            return sh.run("ssh " + user + "@" + this.host + " \"" + commands.join("; ") 
-                + ";exit\"");
+        console.log("SSH to " + host);
+
+        var sshCall;
+        if (process.platform.match(/win32/)) {
+            sshCall = require("child_process").spawnSync(
+                "plink", 
+                    ["-ssh", "-pw", "Y0rPassW0rd!",
+                    user + "@" + host, 
+                    commands.join("; ")]
+                );
+        } else {
+            sshCall = require("child_process").spawnSync(
+                "ssh", 
+                    [user + "@" + host, 
+                    commands.join("; ")]
+                );
+        }                
+        try {
+            if (sshCall.stderr.length) {
+                console.error("SSH FAILED " + sshCall.stderr.toString());
+                return sshCall.stderr.toString();
+            }
+        } catch (e) {
+            console.dir(sshCall);
         }
-        return sh.exec("ssh " + user + "@" + this.host + " \"" + commands.join("; ") 
-            + ";exit\"").stdout;
+        return sshCall.stdout.toString();
     }
 
+    //e.g.
     log.startCase("Check no invalid files are left in the upload folder");
     assert(!ssh("ls /home/tomcat/ROOT/uploads", true).length,
         "Bad files left in the upload folder");
 
+    
+    var sh = require("child_process").execSync;
 
     function taillog(n, reverse) {
         n = n || 10;
