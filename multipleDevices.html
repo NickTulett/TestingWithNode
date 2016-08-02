@@ -105,9 +105,9 @@
                 <h3>Running tests in Chrome's Device Emulator</h3>
                 <p>Chrome Developer Tools has a device emulation mode that changes the screen dimensions and user agent string to reflect a mobile device. With a bit of work, we can exploit this in our scripts.</p>
                 <pre><code class="javascript">
-    var utils = require(/home/user/node_modules/webdriver-sync/src/utils);//edit as needed
-    //start the test with a browser named "Mobile:Apple iPhone 5" or similar
-    var mobileDevice = utils.objectToMap({"deviceName": driverType.split(':')[1]});
+    var utils = require("/home/user/node_modules/webdriver-sync/src/utils");//edit as needed
+    //pass the device name in as a string, e.g "Apple iPhone 5"
+    var mobileDevice = utils.objectToMap({"deviceName": deviceName});
     chromeOptions = new wd.ChromeOptions();
     chromeOptions.setExperimentalOption("mobileEmulation", mobileDevice);
     caps = new wd.DesiredCapabilities["chrome"]();
