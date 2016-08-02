@@ -90,9 +90,7 @@
                 <p>The android device will now be available as a RemoteWebDriver:</p>
                 <pre><code class="javascript">
     var chromeOptions = new wd.ChromeOptions();
-    //setExperimentalOption is not implemented correctly in webdriver-sync, 
-    //so we have to drill down to the underlying instance method
-    chromeOptions._instance.setExperimentalOptionSync("androidPackage", "com.android.chrome");
+    chromeOptions.setExperimentalOption("androidPackage", "com.android.chrome");
     caps = new wd.DesiredCapabilities["chrome"]();
     caps.setCapability("chromeOptions", chromeOptions);
     driver = new wd["RemoteWebDriver"]("http://127.0.0.1:9515", caps);    
@@ -104,6 +102,20 @@
     driver.manage().window().maximize();
                 </code></pre>
 
+                <h3>Running tests in Chrome's Device Emulator</h3>
+                <p>Chrome Developer Tools has a device emulation mode that changes the screen dimensions and user agent string to reflect a mobile device. With a bit of work, we can exploit this in our scripts.</p>
+                <pre><code class="javascript">
+    var utils = require(/home/user/node_modules/webdriver-sync/src/utils);//edit as needed
+    //start the test with a browser named "Mobile:Apple iPhone 5" or similar
+    var mobileDevice = utils.objectToMap({"deviceName": driverType.split(':')[1]});
+    chromeOptions = new wd.ChromeOptions();
+    chromeOptions.setExperimentalOption("mobileEmulation", mobileDevice);
+    caps = new wd.DesiredCapabilities["chrome"]();
+    caps.setCapability("chromeOptions", chromeOptions);
+    driver = new wd["ChromeDriver"](caps); 
+                </code></pre>                
+                <p>Chrome will now open but switched to the chosen device emulation mode.</p>
+                <p>Note that this means you will have to adapt your scripts to cope with hamburger menus.</p>
                 
                 <a href="enhancedScripts.html">Next: Readable test scripts</a>
 
