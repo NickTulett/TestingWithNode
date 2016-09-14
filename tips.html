@@ -370,7 +370,7 @@ assert(CEheader == "gzip", "gzip not enabled");
                 <p>You might want to use a proxy server while you are testing, for instance to run the tests past <a href='https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project'>OWASP ZAPROXY</a> for additional security testing. You can do this in Firefox by editing the Profile and in Chrome via the ChromeOptions object:</p>
                 <pre><code class="javascript">
     var wd = require("webdriver-sync");
-    var profile = new FirefoxProfile();
+    var profile = new wd.FirefoxProfile();
     profile.setPreference("network.proxy.http", "192.168.10.130");
     profile.setPreference("network.proxy.http_port", 8080);
     profile.setPreference("network.proxy.type", 1);//set to manual
