@@ -117,6 +117,27 @@
                 <p>Chrome will now open but switched to the chosen device emulation mode.</p>
                 <p>Note that this means you will have to adapt your scripts to cope with hamburger menus.</p>
                 
+                <h3>Network throttling with ChromeDriver</h3>
+                <p>ChromeDriver 2.24 provides the ability to set network conditions as seen in the Developer Tools device tab.</p>
+                <p>The interface is not exposed yet in webdriver-sync but with a bit of work, we can access the settings via the JSON Wire Protocol.</p>
+                <pre><code class="javascript">
+    var sh = require("child_process").execSync;                
+
+    function setNetwork(networkType) {
+        var sessId = driver.getSessionId().toString();
+        console.log("SESSION " + sessId);
+        var port = sh("netstat -ltpn | grep chromedriver").toString().match(/127.0.0.1:(\d+)/)[1];
+        console.log("PORT " + port);
+        console.log("SETTING NETWORK TO " + networkType);
+        sh(`wget -q -O- http://localhost:${port}/session/${sessId}/chromium/network_conditions 
+           --post-data='{"network_name": "${networkType}"}'`);
+    }; 
+
+    //we need to test using a mobileDevice as set up above with an additional capability:
+    caps.setCapability("networkConnectionEnabled", true);
+
+               </code></pre>                
+
                 <a href="enhancedScripts.html">Next: Readable test scripts</a>
 
 
