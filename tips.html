@@ -366,8 +366,8 @@ var CEheader = PTL.getHeaders(firstJS, "Content-Encoding");
 assert(CEheader == "gzip", "gzip not enabled");
                 </code></pre>
 
-                <h3>Using a proxy server with Firefox</h3>
-                <p>You might want to use a proxy server while you are testing, for instance to run the tests past <a href='https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project'>OWASP ZAPROXY</a> for additional security testing. You can do this in Firefox by editing the Profile:</p>
+                <h3>Using a proxy server</h3>
+                <p>You might want to use a proxy server while you are testing, for instance to run the tests past <a href='https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project'>OWASP ZAPROXY</a> for additional security testing. You can do this in Firefox by editing the Profile and in Chrome via the ChromeOptions object:</p>
                 <pre><code class="javascript">
     var wd = require("webdriver-sync");
     var profile = new FirefoxProfile();
@@ -375,7 +375,15 @@ assert(CEheader == "gzip", "gzip not enabled");
     profile.setPreference("network.proxy.http_port", 8080);
     profile.setPreference("network.proxy.type", 1);//set to manual
 
-    var driver = new wd["FirefoxDriver"](profile);                
+    var driver = new wd["FirefoxDriver"](profile);       
+
+    //or in Chrome:
+    var chromeOptions = new wd.ChromeOptions();
+    chromeOptions.addArguments("proxy-server=192.168.10.130:8080");
+    var caps = new wd.DesiredCapabilities["chrome"]();
+    caps.setCapability("chromeOptions", chromeOptions);
+
+    var driver = new wd["ChromeDriver"](caps);    
                 </code></pre>
 
 
